@@ -19,6 +19,7 @@ package org.jetbrains.jet.codegen.context;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.codegen.binding.MutableClosure;
+import org.jetbrains.jet.lang.descriptors.SimpleFunctionDescriptor;
 import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
 import org.jetbrains.jet.codegen.OwnerKind;
 import org.jetbrains.jet.codegen.StackValue;
@@ -74,5 +75,13 @@ public class MethodContext extends CodegenContext {
     @Override
     public String toString() {
         return "Method: " + getContextDescriptor();
+    }
+
+    public boolean isInlineFunction() {
+        DeclarationDescriptor descriptor = getContextDescriptor();
+        if (descriptor instanceof SimpleFunctionDescriptor) {
+            return ((SimpleFunctionDescriptor) descriptor).isInline();
+        }
+        return false;
     }
 }

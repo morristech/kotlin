@@ -1565,7 +1565,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
             superCallable.invokeWithNotNullAssertion(codegen.v, state, resolvedCall);
         }
         else {
-            codegen.invokeMethodWithArguments(superCallable, resolvedCall, null, StackValue.none());
+            codegen.invokeMethodWithArguments(superCallable, resolvedCall, null, StackValue.none(), closureForSuper, false);
         }
     }
 
@@ -1652,7 +1652,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
 
             CallableMethod method = typeMapper.mapToCallableMethod((ConstructorDescriptor) resolvedCall.getResultingDescriptor());
 
-            codegen.invokeMethodWithArguments(method, resolvedCall, null, StackValue.none());
+            codegen.invokeMethodWithArguments(method, resolvedCall, null, StackValue.none(), null, false);
         }
         else {
             iv.invokespecial(implClass.getInternalName(), "<init>", "(Ljava/lang/String;I)V");
