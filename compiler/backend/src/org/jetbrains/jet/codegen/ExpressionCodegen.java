@@ -2145,6 +2145,12 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             receiver = StackValue.receiver(resolvedCall, receiver, this, callableMethod);
             receiver.put(receiver.type, v);
         }
+
+        if (hasDefaults(resolvedCall)) {
+            inliner = Inliner.NOT_INLINE;
+            isInline = false;
+        }
+
         inliner.putHiddenParams();
 
         int mask = pushMethodArguments(resolvedCall, callableMethod.getValueParameterTypes(), inliner);
@@ -2394,6 +2400,21 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             }
         }
         return mask;
+    }
+
+    private boolean hasDefaults(@NotNull ResolvedCall resolvedCall) {
+        @SuppressWarnings("unchecked")
+        List<ResolvedValueArgument> valueArguments = resolvedCall.getValueArgumentsByIndex();
+        CallableDescriptor fd = resolvedCall.getResultingDescriptor();
+
+        for (ValueParameterDescriptor valueParameter : fd.getValueParameters()) {
+            StackValue valueIfPresent = null;
+            ResolvedValueArgument resolvedValueArgument = valueArguments.get(valueParameter.getIndex());
+            if (resolvedValueArgument instanceof DefaultValueArgument) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void genVarargs(ValueParameterDescriptor valueParameterDescriptor, VarargValueArgument valueArgument) {
