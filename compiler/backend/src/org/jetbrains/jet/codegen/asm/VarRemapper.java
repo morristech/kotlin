@@ -122,7 +122,9 @@ public abstract class VarRemapper {
         public int doRemap(int index) {
             if (index < paramSize) {
                 InlineCodegen.ParameterInfo info = params.get(index);
-                assert !info.isSkipped;
+                if (info.isSkipped) {
+                    throw new RuntimeException("Trying to access skipped parameter: " + info.type + " at " +index);
+                }
                 return info.getInlinedIndex();
             } else {
                 return paramShift + actualParams + index; //captured params not used directly in this inlined method, they used in closure

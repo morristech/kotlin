@@ -41,10 +41,7 @@ import org.jetbrains.jet.codegen.signature.JvmMethodSignature;
 import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.codegen.state.JetTypeMapper;
 import org.jetbrains.jet.lang.descriptors.*;
-import org.jetbrains.jet.lang.psi.JetDeclarationWithBody;
-import org.jetbrains.jet.lang.psi.JetExpression;
-import org.jetbrains.jet.lang.psi.JetFunctionLiteral;
-import org.jetbrains.jet.lang.psi.JetFunctionLiteralExpression;
+import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingContextUtils;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
@@ -95,6 +92,8 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
 
     private final JvmMethodSignature jvmSignature;
 
+    private final Call call;
+
     @Nullable
     public static MethodNode getMethodNode(
             InputStream classData,
@@ -117,12 +116,20 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         return methodNode[0];
     }
 
-    public InlineCodegen(ExpressionCodegen codegen, boolean notSeparateInline, GenerationState state, boolean disabled, SimpleFunctionDescriptor functionDescriptor) {
+    public InlineCodegen(
+            @NotNull ExpressionCodegen codegen,
+            boolean notSeparateInline,
+            @NotNull GenerationState state,
+            boolean disabled,
+            @NotNull SimpleFunctionDescriptor functionDescriptor,
+            @NotNull Call call
+    ) {
         this.codegen = codegen;
         this.notSeparateInline = notSeparateInline;
         this.state = state;
         this.disabled = disabled;
         this.functionDescriptor = functionDescriptor.getOriginal();
+        this.call = call;
         typeMapper = codegen.getTypeMapper();
         bindingContext = codegen.getBindingContext();
         initialFrameSize = codegen.getFrameMap().getCurrentSize();
@@ -142,6 +149,8 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         } else {
             file = element.getContainingFile().getVirtualFile();
         }
+
+        assert file != null : "Coudn't find declaration for " + functionDescriptor.getName();
 
         boolean isSources = !file.getExtension().equalsIgnoreCase("class");
 
@@ -171,23 +180,26 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
                 node = getMethodNode(file.getInputStream(), functionDescriptor.getName().asString(),
                                      callableMethod.getSignature().getAsmMethod().getDescriptor());
             }
+
+            inlineCall(node, true);
+        }
+        catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        catch (CompilationException e) {
+            throw e;
         }
         catch (Exception e) {
-            StringWriter sw = null;
-            if (node != null) {
-                Textifier p = new Textifier();
-                node.accept(new TraceMethodVisitor(p));
-                sw = new StringWriter();
-                p.print(new PrintWriter(sw));
-                sw.flush();
-            }
-            throw new RuntimeException("Coudn't inline method call '" +
+            String text = printNode(node);
+            throw new CompilationException("Couldn't inline method call '" +
                                        functionDescriptor.getName() +
                                        "' into \n" + BindingContextUtils.descriptorToDeclaration(bindingContext, codegen.getContext().getContextDescriptor()).getText() +
                                        "\ncause: " +
-                                       sw.getBuffer().toString(), e);
+                                       text, e, call.getCallElement());
         }
-        inlineCall(node, true);
     }
 
     private void inlineCall(MethodNode node, boolean inlineClosures) {
@@ -197,9 +209,8 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
                 prepareInlinedMethod2(node);
             }
             catch (AnalyzerException e) {
-                throw new RuntimeException(e.getMessage() + "\n " + printNode(node), e);
+                throw new RuntimeException(e);
             }
-            //prepareInlinedMethod(node);
         }
 
         int valueParamSize = originalFunctionFrame.getCurrentSize();
@@ -349,9 +360,6 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         methodVisitor.visitLabel(end);
     }
 
-    private Collection<Integer> getClosureIndexes() {
-        return expressionMap.keySet();
-    }
 
     private void generateClosuresBodies() {
         for (Iterator<ClosureInfo> iterator = expressionMap.values().iterator(); iterator.hasNext(); ) {
@@ -669,8 +677,8 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         else if (descriptor instanceof FunctionDescriptor) {
             return parent.intoFunction((FunctionDescriptor) descriptor);
         }
-
-        return null;
+        System.out.println("Coudn't build context for " + descriptor);
+        throw new IllegalStateException("Coudn't build context for " + descriptor);
     }
 
     @NotNull
