@@ -21,7 +21,8 @@ import org.jetbrains.jet.j2k.Converter
 
 public fun Type.isPrimitive(): Boolean = this is PrimitiveType
 
-public abstract class NullableType(override public val nullable: Boolean, val converter: Converter): Type {
+public abstract class NullableType(nullable: Boolean, val converter: Converter): Type {
+    override public val nullable: Boolean = !converter.settings.forceNotNullTypes && nullable
 }
 
 public trait NotNullType : Type {
@@ -39,10 +40,7 @@ public trait Type : Element {
     }
 
     protected fun isNullableStr(): String? {
-        return (if (nullable && !forceNotNullTypes)
-            "?"
-        else
-            "")
+        return (if (nullable) "?" else "")
     }
 
     class object {
