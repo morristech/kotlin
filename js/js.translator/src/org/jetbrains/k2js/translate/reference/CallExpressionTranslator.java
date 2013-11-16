@@ -64,11 +64,10 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
     private JsExpression translate() {
         prepareToBuildCall();
 
-        return CallBuilder.build(context())
+        return CallBuilder.build(context(), getResolvedCall())
                 .receiver(translatedReceiver)
                 .callee(translatedCallee)
                 .args(argumentsInfo.getTranslateArguments())
-                .resolvedCall(getResolvedCall())
                 .type(callType)
                 .translate();
     }

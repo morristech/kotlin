@@ -18,8 +18,11 @@ package org.jetbrains.k2js.translate.operation;
 
 import com.google.dart.compiler.backend.js.ast.JsExpression;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.jet.lang.psi.JetBinaryExpression;
+import org.jetbrains.jet.lang.resolve.BindingContext;
+import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.reference.CallBuilder;
 import org.jetbrains.k2js.translate.utils.BindingUtils;
@@ -59,8 +62,10 @@ public final class OverloadedAssignmentTranslator extends AssignmentTranslator {
 
     @NotNull
     private JsExpression overloadedMethodInvocation() {
-        return CallBuilder.build(context())
-                .descriptor(operationDescriptor)
+        ResolvedCall<? extends CallableDescriptor> resolvedCall =
+                context().bindingContext().get(BindingContext.RESOLVED_CALL, expression.getOperationReference());
+        assert resolvedCall != null;
+        return CallBuilder.build(context(), resolvedCall)
                 .receiver(accessTranslator.translateAsGet())
                 .args(right)
                 .translate();

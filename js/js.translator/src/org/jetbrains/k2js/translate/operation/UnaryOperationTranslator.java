@@ -56,9 +56,8 @@ public final class UnaryOperationTranslator {
             return translateExclForBinaryEqualLikeExpr((JsBinaryOperation) baseExpression);
         }
 
-        return CallBuilder.build(context)
+        return CallBuilder.build(context, getResolvedCall(context.bindingContext(), expression.getOperationReference()))
                 .receiver(TranslationUtils.translateBaseExpression(context, expression))
-                .resolvedCall(getResolvedCall(context.bindingContext(), expression.getOperationReference()))
                 .translate();
     }
 

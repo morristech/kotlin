@@ -175,9 +175,8 @@ public final class Translation {
             return null;
         }
         FunctionDescriptor functionDescriptor = getFunctionDescriptor(context.bindingContext(), mainFunction);
-        return CallBuilder.build(context)
+        return CallBuilder.build(context, functionDescriptor)
                 .args(new JsArrayLiteral(toStringLiteralList(arguments, context.program())))
-                .descriptor(functionDescriptor)
                 .translate().makeStmt();
     }
 }

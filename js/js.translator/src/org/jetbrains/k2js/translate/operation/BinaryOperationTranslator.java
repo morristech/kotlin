@@ -128,15 +128,15 @@ public final class BinaryOperationTranslator extends AbstractTranslator {
 
     @NotNull
     private JsExpression translateAsOverloadedBinaryOperation() {
-        CallBuilder callBuilder = setReceiverAndArguments();
         ResolvedCall<?> resolvedCall = getResolvedCall(bindingContext(), expression.getOperationReference());
-        JsExpression result = callBuilder.resolvedCall(resolvedCall).type(CallType.NORMAL).translate();
+        CallBuilder callBuilder = setReceiverAndArguments(resolvedCall);
+        JsExpression result = callBuilder.type(CallType.NORMAL).translate();
         return mayBeWrapWithNegation(result);
     }
 
     @NotNull
-    private CallBuilder setReceiverAndArguments() {
-        CallBuilder callBuilder = CallBuilder.build(context());
+    private CallBuilder setReceiverAndArguments(ResolvedCall<?> resolvedCall) {
+        CallBuilder callBuilder = CallBuilder.build(context(), resolvedCall);
 
         JsExpression leftExpression = translateLeftExpression(context(), expression);
         JsExpression rightExpression = translateRightExpression(context(), expression);

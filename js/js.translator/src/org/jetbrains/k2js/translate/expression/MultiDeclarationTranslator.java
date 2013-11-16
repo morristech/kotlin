@@ -78,9 +78,8 @@ public class MultiDeclarationTranslator extends AbstractTranslator {
         for (JetMultiDeclarationEntry entry : multiDeclaration.getEntries()) {
             ResolvedCall<FunctionDescriptor> entryInitCall =  context().bindingContext().get(BindingContext.COMPONENT_RESOLVED_CALL, entry);
             assert entryInitCall != null : "Entry init call must be not null";
-            JsExpression entryInitializer = CallBuilder.build(context())
+            JsExpression entryInitializer = CallBuilder.build(context(), entryInitCall)
                     .receiver(multiObjNameRef)
-                    .resolvedCall(entryInitCall)
                     .translate();
 
             VariableDescriptor descriptor = BindingContextUtils.getNotNull( context().bindingContext(), BindingContext.VARIABLE, entry);

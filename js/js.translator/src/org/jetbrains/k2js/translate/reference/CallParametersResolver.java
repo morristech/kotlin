@@ -85,7 +85,7 @@ public final class CallParametersResolver {
             return ReferenceTranslator.translateAsLocalNameReference(descriptor, context);
         }
         ResolvedCallWithTrace<FunctionDescriptor> call = ((VariableAsFunctionResolvedCall) resolvedCall).getFunctionCall();
-        return CallBuilder.build(context).resolvedCall(call).translate();
+        return CallBuilder.build(context, call).translate();
     }
 
     @Nullable

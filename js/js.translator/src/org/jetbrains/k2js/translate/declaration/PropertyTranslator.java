@@ -142,10 +142,9 @@ public final class PropertyTranslator extends AbstractTranslator {
     }
 
     private JsExpression getDelegateCall(ResolvedCall<FunctionDescriptor> call, List<JsExpression> args) {
-        return CallBuilder.build(context())
+        return CallBuilder.build(context(), call)
                 .receiver(getDelegateNameRef(getPropertyName()))
                 .args(args)
-                .resolvedCall(call)
                 .type(CallType.NORMAL)
                 .translate();
     }

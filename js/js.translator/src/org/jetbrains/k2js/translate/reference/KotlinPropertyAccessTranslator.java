@@ -100,9 +100,8 @@ public final class KotlinPropertyAccessTranslator extends PropertyAccessTranslat
 
     @NotNull
     private CallBuilder callBuilderForAccessor(@Nullable JsExpression qualifier) {
-        return CallBuilder.build(context())
+        return CallBuilder.build(context(), resolvedCall)
                 .receiver(qualifier)
-                .resolvedCall(resolvedCall)
                 .type(getCallType());
     }
 

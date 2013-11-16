@@ -38,8 +38,12 @@ import java.util.List;
 
 public final class CallBuilder {
 
-    public static CallBuilder build(@NotNull TranslationContext context) {
-        return new CallBuilder(context);
+    public static CallBuilder build(@NotNull TranslationContext context, @NotNull ResolvedCall<?> resolvedCall) {
+        return new CallBuilder(context, resolvedCall);
+    }
+
+    public static CallBuilder build(@NotNull TranslationContext context, @NotNull CallableDescriptor descriptor) {
+        return new CallBuilder(context, getResolverCall(descriptor)).descriptor(descriptor);
     }
 
     @NotNull
@@ -50,16 +54,17 @@ public final class CallBuilder {
     private List<JsExpression> args = Collections.emptyList();
     @NotNull
     private /*var*/ CallType callType = CallType.NORMAL;
-    @Nullable
-    private /*var*/ ResolvedCall<?> resolvedCall = null;
+    @NotNull
+    private final ResolvedCall<?> resolvedCall;
     @Nullable
     private  /*var*/ CallableDescriptor descriptor = null;
     @Nullable
     private /*var*/ JsExpression callee = null;
 
 
-    private CallBuilder(@NotNull TranslationContext context) {
+    private CallBuilder(@NotNull TranslationContext context, @NotNull ResolvedCall<?> resolvedCall) {
         this.context = context;
+        this.resolvedCall = resolvedCall;
     }
 
     @NotNull
@@ -81,6 +86,7 @@ public final class CallBuilder {
     }
 
     @NotNull
+    @Deprecated
     public CallBuilder descriptor(@NotNull CallableDescriptor descriptor) {
         this.descriptor = descriptor;
         return this;
@@ -93,12 +99,6 @@ public final class CallBuilder {
     }
 
     @NotNull
-    public CallBuilder resolvedCall(@NotNull ResolvedCall<?> call) {
-        this.resolvedCall = call;
-        return this;
-    }
-
-    @NotNull
     public CallBuilder type(@NotNull CallType type) {
         this.callType = type;
         return this;
@@ -106,20 +106,19 @@ public final class CallBuilder {
 
     @NotNull
     private CallTranslator finish() {
-        if (resolvedCall == null) {
-            assert descriptor != null;
-            resolvedCall = ResolvedCallImpl.create(ResolutionCandidate.create(descriptor, safeGetValue(descriptor.getExpectedThisObject()),
-                                                                              safeGetValue(descriptor.getReceiverParameter()),
-                                                                              ExplicitReceiverKind.THIS_OBJECT, false),
-                                                   TemporaryBindingTrace.create(new BindingTraceContext(), "trace to resolve call (in js)"),
-                                                   TracingStrategy.EMPTY,
-                                                   MutableDataFlowInfoForArguments.WITHOUT_ARGUMENTS_CHECK);
-        }
         if (descriptor == null) {
             descriptor = resolvedCall.getCandidateDescriptor().getOriginal();
         }
-        assert resolvedCall != null;
         return new CallTranslator(receiver, callee, args, resolvedCall, descriptor, callType, context);
+    }
+
+    private static ResolvedCallImpl<CallableDescriptor> getResolverCall(@NotNull CallableDescriptor descriptor) {
+        return ResolvedCallImpl.create(ResolutionCandidate.create(descriptor, safeGetValue(descriptor.getExpectedThisObject()),
+                                                                  safeGetValue(descriptor.getReceiverParameter()),
+                                                                  ExplicitReceiverKind.THIS_OBJECT, false),
+                                       TemporaryBindingTrace.create(new BindingTraceContext(), "trace to resolve call (in js)"),
+                                       TracingStrategy.EMPTY,
+                                       MutableDataFlowInfoForArguments.WITHOUT_ARGUMENTS_CHECK);
     }
 
     @NotNull
