@@ -40,6 +40,8 @@ import org.jetbrains.jet.generators.tests.generator.SimpleTestClassModel;
 import org.jetbrains.jet.generators.tests.generator.SingleClassTestModel;
 import org.jetbrains.jet.generators.tests.generator.TestClassModel;
 import org.jetbrains.jet.generators.tests.generator.TestGenerator;
+import org.jetbrains.jet.j2k.test.AbstractJavaToKotlinConveterTestBasic;
+import org.jetbrains.jet.j2k.test.AbstractJavaToKotlinConveterTestForPlugin;
 import org.jetbrains.jet.jvm.compiler.*;
 import org.jetbrains.jet.lang.resolve.lazy.AbstractLazyResolveDescriptorRendererTest;
 import org.jetbrains.jet.lang.resolve.lazy.AbstractLazyResolveNamespaceComparingTest;
@@ -574,6 +576,20 @@ public class GenerateTests {
                 AbstractEvaluateExpressionTest.class,
                 testModel("compiler/testData/evaluate/constant", "doConstantTest"),
                 testModel("compiler/testData/evaluate/isPure", "doIsPureTest")
+        );
+
+        generateTest(
+                "j2k/tests/test",
+                "JavaToKotlinConverterTestForPluginGenerated",
+                AbstractJavaToKotlinConveterTestForPlugin.class,
+                testModel("j2k/tests/testData/ast", true, "jav", "doTest")
+        );
+
+        generateTest(
+                "j2k/tests/test",
+                "JavaToKotlinConverterTestBasicGenerated",
+                AbstractJavaToKotlinConveterTestBasic.class,
+                testModel("j2k/tests/testData/ast", true, "jav", "doTest")
         );
     }
 
