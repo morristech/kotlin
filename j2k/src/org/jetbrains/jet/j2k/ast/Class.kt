@@ -31,9 +31,7 @@ public open class Class(val converter: Converter,
                         val extendsTypes: List<Type>,
                         val baseClassParams: List<Expression>,
                         val implementsTypes: List<Type>,
-                        members: List<Node>) : Member(modifiers) {
-    val members = getMembers(members, converter)
-
+                        val members: List<Node>) : Member(modifiers) {
     open val TYPE: String
         get() = "class"
 
@@ -145,24 +143,12 @@ public open class Class(val converter: Converter,
             typeParameterWhereToKotlin() +
             bodyToKotlin()
 
-    class object {
-        open fun getMembers(members: List<Node>, converter: Converter): List<Node> {
-            if (converter.hasFlag(J2KConverterFlags.SKIP_NON_PUBLIC_MEMBERS)) {
-                return members.filter {
-                    it is Comment ||
-                    (it as Member).accessModifier() == Modifier.PUBLIC ||
-                    (it as Member).accessModifier() == Modifier.PROTECTED
-                }
-            }
-            return members
-        }
 
-        private fun getStatic(members: List<Node>): List<Node> {
-            return members.filter { it is Member && it.isStatic() }
-        }
+    private fun getStatic(members: List<Node>): List<Node> {
+        return members.filter { it is Member && it.isStatic() }
+    }
 
-        private fun getNonStatic(members: List<Node>): List<Node> {
-            return members.filterNot { it is Member && it.isStatic() }
-        }
+    private fun getNonStatic(members: List<Node>): List<Node> {
+        return members.filterNot { it is Member && it.isStatic() }
     }
 }
