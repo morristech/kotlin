@@ -38,7 +38,6 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
     }
     
     @TestMetadata("j2k/tests/testData/ast/annotations")
-    @InnerTestClasses({})
     public static class Annotations extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInAnnotations() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/annotations"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -54,15 +53,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/annotations/jetbrainsNotNullChainExpr.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Annotations");
-            suite.addTestSuite(Annotations.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/anonymousBlock")
-    @InnerTestClasses({})
     public static class AnonymousBlock extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInAnonymousBlock() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/anonymousBlock"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -78,15 +71,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/anonymousBlock/oneStaticAnonBlock.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("AnonymousBlock");
-            suite.addTestSuite(AnonymousBlock.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/arrayAccessExpression")
-    @InnerTestClasses({})
     public static class ArrayAccessExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInArrayAccessExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/arrayAccessExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -107,15 +94,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/arrayAccessExpression/variableIndex.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ArrayAccessExpression");
-            suite.addTestSuite(ArrayAccessExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/arrayInitializerExpression")
-    @InnerTestClasses({})
     public static class ArrayInitializerExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInArrayInitializerExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/arrayInitializerExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -181,15 +162,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/arrayInitializerExpression/twoDim.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ArrayInitializerExpression");
-            suite.addTestSuite(ArrayInitializerExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/arrayType")
-    @InnerTestClasses({})
     public static class ArrayType extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInArrayType() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/arrayType"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -245,15 +220,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/arrayType/newStringArray.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ArrayType");
-            suite.addTestSuite(ArrayType.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/assertStatement")
-    @InnerTestClasses({})
     public static class AssertStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInAssertStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/assertStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -274,15 +243,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/assertStatement/withStringDetail.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("AssertStatement");
-            suite.addTestSuite(AssertStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/assignmentExpression")
-    @InnerTestClasses({})
     public static class AssignmentExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInAssignmentExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/assignmentExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -358,15 +321,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/assignmentExpression/xor.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("AssignmentExpression");
-            suite.addTestSuite(AssignmentExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/binaryExpression")
-    @InnerTestClasses({})
     public static class BinaryExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInBinaryExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/binaryExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -457,15 +414,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/binaryExpression/xor.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("BinaryExpression");
-            suite.addTestSuite(BinaryExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/boxedType")
-    @InnerTestClasses({})
     public static class BoxedType extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInBoxedType() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/boxedType"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -526,15 +477,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/boxedType/short.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("BoxedType");
-            suite.addTestSuite(BoxedType.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/breakStatement")
-    @InnerTestClasses({})
     public static class BreakStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInBreakStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/breakStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -550,15 +495,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/breakStatement/breakWithoutLabel.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("BreakStatement");
-            suite.addTestSuite(BreakStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/callChainExpression")
-    @InnerTestClasses({})
     public static class CallChainExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInCallChainExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/callChainExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -589,15 +528,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/callChainExpression/sout.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("CallChainExpression");
-            suite.addTestSuite(CallChainExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/class")
-    @InnerTestClasses({})
     public static class Class extends AbstractJavaToKotlinConveterTestBasic {
         @TestMetadata("abstractClass.jav")
         public void testAbstractClass() throws Exception {
@@ -728,15 +661,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/class/twoStaticMethod.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Class");
-            suite.addTestSuite(Class.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/classExpression")
-    @InnerTestClasses({})
     public static class ClassExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInClassExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/classExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -757,15 +684,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/classExpression/stringClass.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ClassExpression");
-            suite.addTestSuite(ClassExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/conditionalExpression")
-    @InnerTestClasses({})
     public static class ConditionalExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInConditionalExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/conditionalExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -776,15 +697,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/conditionalExpression/simpleConditionalExpression.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ConditionalExpression");
-            suite.addTestSuite(ConditionalExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/constructors")
-    @InnerTestClasses({})
     public static class Constructors extends AbstractJavaToKotlinConveterTestBasic {
         @TestMetadata("allCallsPrimary.jav")
         public void testAllCallsPrimary() throws Exception {
@@ -820,15 +735,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/constructors/withManyDefaultParams.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Constructors");
-            suite.addTestSuite(Constructors.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/continueStatement")
-    @InnerTestClasses({})
     public static class ContinueStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInContinueStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/continueStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -844,15 +753,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/continueStatement/continueWithoutLabel.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ContinueStatement");
-            suite.addTestSuite(ContinueStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/declarationStatement")
-    @InnerTestClasses({})
     public static class DeclarationStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInDeclarationStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/declarationStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -888,15 +791,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/declarationStatement/singleStringDeclaration.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("DeclarationStatement");
-            suite.addTestSuite(DeclarationStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/doWhileStatement")
-    @InnerTestClasses({})
     public static class DoWhileStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInDoWhileStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/doWhileStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -922,15 +819,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/doWhileStatement/whileWithReturn.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("DoWhileStatement");
-            suite.addTestSuite(DoWhileStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/enum")
-    @InnerTestClasses({})
     public static class Enum extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInEnum() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/enum"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1011,15 +902,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/enum/typeSafeEnum.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Enum");
-            suite.addTestSuite(Enum.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/field")
-    @InnerTestClasses({})
     public static class Field extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInField() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/field"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1065,15 +950,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/field/varWithoutInit.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Field");
-            suite.addTestSuite(Field.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/for")
-    @InnerTestClasses({})
     public static class For extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInFor() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/for"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1134,15 +1013,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/for/forWithReturn.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("For");
-            suite.addTestSuite(For.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/foreachStatement")
-    @InnerTestClasses({})
     public static class ForeachStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInForeachStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/foreachStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1168,15 +1041,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/foreachStatement/enhancedForWithReturn.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ForeachStatement");
-            suite.addTestSuite(ForeachStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/function")
-    @InnerTestClasses({})
     public static class Function extends AbstractJavaToKotlinConveterTestBasic {
         @TestMetadata("abstractMethod.jav")
         public void testAbstractMethod() throws Exception {
@@ -1297,15 +1164,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/function/writableParameter.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Function");
-            suite.addTestSuite(Function.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/identifier")
-    @InnerTestClasses({})
     public static class Identifier extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInIdentifier() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/identifier"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1326,15 +1187,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/identifier/withDollar.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Identifier");
-            suite.addTestSuite(Identifier.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/ifStatement")
-    @InnerTestClasses({})
     public static class IfStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInIfStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/ifStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1360,15 +1215,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/ifStatement/ifStatementWithoutElse.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("IfStatement");
-            suite.addTestSuite(IfStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/importStatement")
-    @InnerTestClasses({})
     public static class ImportStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInImportStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/importStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1384,20 +1233,19 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/importStatement/importWithStar.jav");
         }
         
+        @TestMetadata("onlyImports.jav")
+        public void testOnlyImports() throws Exception {
+            doTest("j2k/tests/testData/ast/importStatement/onlyImports.jav");
+        }
+        
         @TestMetadata("simpleImport.jav")
         public void testSimpleImport() throws Exception {
             doTest("j2k/tests/testData/ast/importStatement/simpleImport.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ImportStatement");
-            suite.addTestSuite(ImportStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/inProjectionType")
-    @InnerTestClasses({})
     public static class InProjectionType extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInInProjectionType() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/inProjectionType"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1408,15 +1256,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/inProjectionType/methodParams.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("InProjectionType");
-            suite.addTestSuite(InProjectionType.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/inheritance")
-    @InnerTestClasses({})
     public static class Inheritance extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInInheritance() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/inheritance"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1442,15 +1284,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/inheritance/classOneExtendsBaseWithZeroParamsNonEmptyConstructor.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Inheritance");
-            suite.addTestSuite(Inheritance.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/isOperator")
-    @InnerTestClasses({})
     public static class IsOperator extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInIsOperator() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/isOperator"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1466,15 +1302,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/isOperator/simpleReference.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("IsOperator");
-            suite.addTestSuite(IsOperator.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/issues")
-    @InnerTestClasses({})
     public static class Issues extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInIssues() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/issues"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1630,15 +1460,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/issues/qualifyStatic.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Issues");
-            suite.addTestSuite(Issues.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/kotlinExclusion")
-    @InnerTestClasses({})
     public static class KotlinExclusion extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInKotlinExclusion() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/kotlinExclusion"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1649,15 +1473,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/kotlinExclusion/kt-656.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("KotlinExclusion");
-            suite.addTestSuite(KotlinExclusion.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/labelStatement")
-    @InnerTestClasses({})
     public static class LabelStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInLabelStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/labelStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1668,15 +1486,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/labelStatement/complicatedExampleFromJavaTutorial.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("LabelStatement");
-            suite.addTestSuite(LabelStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/list")
-    @InnerTestClasses({})
     public static class List extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInList() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/list"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1692,15 +1504,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/list/Lists.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("List");
-            suite.addTestSuite(List.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/literalExpression")
-    @InnerTestClasses({})
     public static class LiteralExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInLiteralExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/literalExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1736,15 +1542,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/literalExpression/trueOrFalse.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("LiteralExpression");
-            suite.addTestSuite(LiteralExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/localVariable")
-    @InnerTestClasses({})
     public static class LocalVariable extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInLocalVariable() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/localVariable"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1755,15 +1555,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/localVariable/object.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("LocalVariable");
-            suite.addTestSuite(LocalVariable.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/methodCallExpression")
-    @InnerTestClasses({})
     public static class MethodCallExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInMethodCallExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/methodCallExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1789,11 +1583,6 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/methodCallExpression/simpleCall.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("MethodCallExpression");
-            suite.addTestSuite(MethodCallExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/misc")
@@ -1841,7 +1630,6 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
     }
     
     @TestMetadata("j2k/tests/testData/ast/newClassExpression")
-    @InnerTestClasses({})
     public static class NewClassExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInNewClassExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/newClassExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1902,15 +1690,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/newClassExpression/newStaticInnerClass.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("NewClassExpression");
-            suite.addTestSuite(NewClassExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/objectLiteral")
-    @InnerTestClasses({})
     public static class ObjectLiteral extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInObjectLiteral() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/objectLiteral"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1921,15 +1703,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/objectLiteral/MyFrame.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ObjectLiteral");
-            suite.addTestSuite(ObjectLiteral.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/outProjectionType")
-    @InnerTestClasses({})
     public static class OutProjectionType extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInOutProjectionType() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/outProjectionType"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1940,15 +1716,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/outProjectionType/methodParams.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("OutProjectionType");
-            suite.addTestSuite(OutProjectionType.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/packageStatement")
-    @InnerTestClasses({})
     public static class PackageStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInPackageStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/packageStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1959,15 +1729,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/packageStatement/orgJetbrainsJetJ2kIn.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("PackageStatement");
-            suite.addTestSuite(PackageStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/parenthesizedExpression")
-    @InnerTestClasses({})
     public static class ParenthesizedExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInParenthesizedExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/parenthesizedExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1983,15 +1747,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/parenthesizedExpression/parenthesized2.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ParenthesizedExpression");
-            suite.addTestSuite(ParenthesizedExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/polyadicExpression")
-    @InnerTestClasses({})
     public static class PolyadicExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInPolyadicExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/polyadicExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2027,15 +1785,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/polyadicExpression/unassignedShiftRight.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("PolyadicExpression");
-            suite.addTestSuite(PolyadicExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/postfixOperator")
-    @InnerTestClasses({})
     public static class PostfixOperator extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInPostfixOperator() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/postfixOperator"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2051,15 +1803,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/postfixOperator/increment.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("PostfixOperator");
-            suite.addTestSuite(PostfixOperator.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/prefixOperator")
-    @InnerTestClasses({})
     public static class PrefixOperator extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInPrefixOperator() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/prefixOperator"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2095,15 +1841,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/prefixOperator/tilde.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("PrefixOperator");
-            suite.addTestSuite(PrefixOperator.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/rawGenerics")
-    @InnerTestClasses({})
     public static class RawGenerics extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInRawGenerics() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/rawGenerics"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2129,15 +1869,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/rawGenerics/rawGenericMethod.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("RawGenerics");
-            suite.addTestSuite(RawGenerics.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/returnStatement")
-    @InnerTestClasses({})
     public static class ReturnStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInReturnStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/returnStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2163,15 +1897,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/returnStatement/returnString.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ReturnStatement");
-            suite.addTestSuite(ReturnStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/starProjectionType")
-    @InnerTestClasses({})
     public static class StarProjectionType extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInStarProjectionType() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/starProjectionType"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2182,15 +1910,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/starProjectionType/methodParams.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("StarProjectionType");
-            suite.addTestSuite(StarProjectionType.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/superExpression")
-    @InnerTestClasses({})
     public static class SuperExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInSuperExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/superExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2211,15 +1933,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/superExpression/superStatement.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("SuperExpression");
-            suite.addTestSuite(SuperExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/switch")
-    @InnerTestClasses({})
     public static class Switch extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInSwitch() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/switch"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2250,15 +1966,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/switch/nondefault.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Switch");
-            suite.addTestSuite(Switch.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/synchronizedStatement")
-    @InnerTestClasses({})
     public static class SynchronizedStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInSynchronizedStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/synchronizedStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2269,15 +1979,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/synchronizedStatement/singleLineExample.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("SynchronizedStatement");
-            suite.addTestSuite(SynchronizedStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/thisExpression")
-    @InnerTestClasses({})
     public static class ThisExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInThisExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/thisExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2293,15 +1997,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/thisExpression/thisStatement.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ThisExpression");
-            suite.addTestSuite(ThisExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/throwStatement")
-    @InnerTestClasses({})
     public static class ThrowStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInThrowStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/throwStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2312,15 +2010,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/throwStatement/simpleThrowStatement.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("ThrowStatement");
-            suite.addTestSuite(ThrowStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/trait")
-    @InnerTestClasses({})
     public static class Trait extends AbstractJavaToKotlinConveterTestBasic {
         @TestMetadata("abstactInterface.jav")
         public void testAbstactInterface() throws Exception {
@@ -2381,15 +2073,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/trait/publicInterface.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Trait");
-            suite.addTestSuite(Trait.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/tryStatement")
-    @InnerTestClasses({})
     public static class TryStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInTryStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/tryStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2415,15 +2101,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/tryStatement/emptyTryWithTwoCatchesWithoutFinally.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("TryStatement");
-            suite.addTestSuite(TryStatement.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/typeCastExpression")
-    @InnerTestClasses({})
     public static class TypeCastExpression extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInTypeCastExpression() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/typeCastExpression"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2469,15 +2149,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/typeCastExpression/wildcardCast.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("TypeCastExpression");
-            suite.addTestSuite(TypeCastExpression.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/typeParameters")
-    @InnerTestClasses({})
     public static class TypeParameters extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInTypeParameters() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/typeParameters"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2538,15 +2212,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/typeParameters/where.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("TypeParameters");
-            suite.addTestSuite(TypeParameters.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/varArg")
-    @InnerTestClasses({})
     public static class VarArg extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInVarArg() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/varArg"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2562,15 +2230,9 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/varArg/ellipsisTypeSingleParams.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("VarArg");
-            suite.addTestSuite(VarArg.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/whileStatement")
-    @InnerTestClasses({})
     public static class WhileStatement extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInWhileStatement() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/whileStatement"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -2596,75 +2258,70 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/whileStatement/whileWithReturn.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("WhileStatement");
-            suite.addTestSuite(WhileStatement.class);
-            return suite;
-        }
     }
     
     public static Test suite() {
         TestSuite suite = new TestSuite("JavaToKotlinConverterTestBasicGenerated");
         suite.addTestSuite(JavaToKotlinConverterTestBasicGenerated.class);
-        suite.addTest(Annotations.innerSuite());
-        suite.addTest(AnonymousBlock.innerSuite());
-        suite.addTest(ArrayAccessExpression.innerSuite());
-        suite.addTest(ArrayInitializerExpression.innerSuite());
-        suite.addTest(ArrayType.innerSuite());
-        suite.addTest(AssertStatement.innerSuite());
-        suite.addTest(AssignmentExpression.innerSuite());
-        suite.addTest(BinaryExpression.innerSuite());
-        suite.addTest(BoxedType.innerSuite());
-        suite.addTest(BreakStatement.innerSuite());
-        suite.addTest(CallChainExpression.innerSuite());
-        suite.addTest(Class.innerSuite());
-        suite.addTest(ClassExpression.innerSuite());
-        suite.addTest(ConditionalExpression.innerSuite());
-        suite.addTest(Constructors.innerSuite());
-        suite.addTest(ContinueStatement.innerSuite());
-        suite.addTest(DeclarationStatement.innerSuite());
-        suite.addTest(DoWhileStatement.innerSuite());
-        suite.addTest(Enum.innerSuite());
-        suite.addTest(Field.innerSuite());
-        suite.addTest(For.innerSuite());
-        suite.addTest(ForeachStatement.innerSuite());
-        suite.addTest(Function.innerSuite());
-        suite.addTest(Identifier.innerSuite());
-        suite.addTest(IfStatement.innerSuite());
-        suite.addTest(ImportStatement.innerSuite());
-        suite.addTest(InProjectionType.innerSuite());
-        suite.addTest(Inheritance.innerSuite());
-        suite.addTest(IsOperator.innerSuite());
-        suite.addTest(Issues.innerSuite());
-        suite.addTest(KotlinExclusion.innerSuite());
-        suite.addTest(LabelStatement.innerSuite());
-        suite.addTest(List.innerSuite());
-        suite.addTest(LiteralExpression.innerSuite());
-        suite.addTest(LocalVariable.innerSuite());
-        suite.addTest(MethodCallExpression.innerSuite());
+        suite.addTestSuite(Annotations.class);
+        suite.addTestSuite(AnonymousBlock.class);
+        suite.addTestSuite(ArrayAccessExpression.class);
+        suite.addTestSuite(ArrayInitializerExpression.class);
+        suite.addTestSuite(ArrayType.class);
+        suite.addTestSuite(AssertStatement.class);
+        suite.addTestSuite(AssignmentExpression.class);
+        suite.addTestSuite(BinaryExpression.class);
+        suite.addTestSuite(BoxedType.class);
+        suite.addTestSuite(BreakStatement.class);
+        suite.addTestSuite(CallChainExpression.class);
+        suite.addTestSuite(Class.class);
+        suite.addTestSuite(ClassExpression.class);
+        suite.addTestSuite(ConditionalExpression.class);
+        suite.addTestSuite(Constructors.class);
+        suite.addTestSuite(ContinueStatement.class);
+        suite.addTestSuite(DeclarationStatement.class);
+        suite.addTestSuite(DoWhileStatement.class);
+        suite.addTestSuite(Enum.class);
+        suite.addTestSuite(Field.class);
+        suite.addTestSuite(For.class);
+        suite.addTestSuite(ForeachStatement.class);
+        suite.addTestSuite(Function.class);
+        suite.addTestSuite(Identifier.class);
+        suite.addTestSuite(IfStatement.class);
+        suite.addTestSuite(ImportStatement.class);
+        suite.addTestSuite(InProjectionType.class);
+        suite.addTestSuite(Inheritance.class);
+        suite.addTestSuite(IsOperator.class);
+        suite.addTestSuite(Issues.class);
+        suite.addTestSuite(KotlinExclusion.class);
+        suite.addTestSuite(LabelStatement.class);
+        suite.addTestSuite(List.class);
+        suite.addTestSuite(LiteralExpression.class);
+        suite.addTestSuite(LocalVariable.class);
+        suite.addTestSuite(MethodCallExpression.class);
         suite.addTest(Misc.innerSuite());
-        suite.addTest(NewClassExpression.innerSuite());
-        suite.addTest(ObjectLiteral.innerSuite());
-        suite.addTest(OutProjectionType.innerSuite());
-        suite.addTest(PackageStatement.innerSuite());
-        suite.addTest(ParenthesizedExpression.innerSuite());
-        suite.addTest(PolyadicExpression.innerSuite());
-        suite.addTest(PostfixOperator.innerSuite());
-        suite.addTest(PrefixOperator.innerSuite());
-        suite.addTest(RawGenerics.innerSuite());
-        suite.addTest(ReturnStatement.innerSuite());
-        suite.addTest(StarProjectionType.innerSuite());
-        suite.addTest(SuperExpression.innerSuite());
-        suite.addTest(Switch.innerSuite());
-        suite.addTest(SynchronizedStatement.innerSuite());
-        suite.addTest(ThisExpression.innerSuite());
-        suite.addTest(ThrowStatement.innerSuite());
-        suite.addTest(Trait.innerSuite());
-        suite.addTest(TryStatement.innerSuite());
-        suite.addTest(TypeCastExpression.innerSuite());
-        suite.addTest(TypeParameters.innerSuite());
-        suite.addTest(VarArg.innerSuite());
-        suite.addTest(WhileStatement.innerSuite());
+        suite.addTestSuite(NewClassExpression.class);
+        suite.addTestSuite(ObjectLiteral.class);
+        suite.addTestSuite(OutProjectionType.class);
+        suite.addTestSuite(PackageStatement.class);
+        suite.addTestSuite(ParenthesizedExpression.class);
+        suite.addTestSuite(PolyadicExpression.class);
+        suite.addTestSuite(PostfixOperator.class);
+        suite.addTestSuite(PrefixOperator.class);
+        suite.addTestSuite(RawGenerics.class);
+        suite.addTestSuite(ReturnStatement.class);
+        suite.addTestSuite(StarProjectionType.class);
+        suite.addTestSuite(SuperExpression.class);
+        suite.addTestSuite(Switch.class);
+        suite.addTestSuite(SynchronizedStatement.class);
+        suite.addTestSuite(ThisExpression.class);
+        suite.addTestSuite(ThrowStatement.class);
+        suite.addTestSuite(Trait.class);
+        suite.addTestSuite(TryStatement.class);
+        suite.addTestSuite(TypeCastExpression.class);
+        suite.addTestSuite(TypeParameters.class);
+        suite.addTestSuite(VarArg.class);
+        suite.addTestSuite(WhileStatement.class);
         return suite;
     }
 }
