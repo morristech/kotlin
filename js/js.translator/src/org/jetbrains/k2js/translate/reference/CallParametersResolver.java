@@ -25,12 +25,10 @@ import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCallWithTrace;
 import org.jetbrains.jet.lang.resolve.calls.model.VariableAsFunctionResolvedCall;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ClassReceiver;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ExtensionReceiver;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ThisReceiver;
+import org.jetbrains.jet.lang.resolve.scopes.receivers.*;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 
+import static org.jetbrains.k2js.translate.reference.AccessTranslationUtils.translateAsGet;
 import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getDeclarationDescriptorForReceiver;
 
 public final class CallParametersResolver {
@@ -82,10 +80,14 @@ public final class CallParametersResolver {
             return callee;
         }
         if (!(resolvedCall instanceof VariableAsFunctionResolvedCall)) {
-            return ReferenceTranslator.translateAsLocalNameReference(descriptor, context);
+            return ReferenceTranslator.translateAsLocalNameReference(descriptor, context);      //
         }
+        //TODO: never get there
         ResolvedCallWithTrace<FunctionDescriptor> call = ((VariableAsFunctionResolvedCall) resolvedCall).getFunctionCall();
-        return CallBuilder.build(context, call).translate();
+        ReceiverValue thisObject = call.getThisObject();
+        assert thisObject instanceof ExpressionReceiver;
+
+        return translateAsGet(((ExpressionReceiver) thisObject).getExpression(), context);
     }
 
     @Nullable
@@ -97,17 +99,9 @@ public final class CallParametersResolver {
         ReceiverValue thisObject = resolvedCall.getThisObject();
         if (!thisObject.exists()) {
             return null;
+        } else {
+            return context.getThisObject(getDeclarationDescriptorForReceiver(thisObject));
         }
-
-        if (thisObject instanceof ClassReceiver) {
-            JsExpression ref = context.getAliasForDescriptor(((ClassReceiver) thisObject).getDeclarationDescriptor());
-            return ref == null ? JsLiteral.THIS : ref;
-        }
-        else if (thisObject instanceof ExtensionReceiver) {
-            return context.getAliasForDescriptor(getDeclarationDescriptorForReceiver(thisObject));
-        }
-
-        return resolvedCall.getReceiverArgument().exists() && resolvedCall.getExplicitReceiverKind().isThisObject() ? JsLiteral.THIS : null;
     }
 
     @NotNull
