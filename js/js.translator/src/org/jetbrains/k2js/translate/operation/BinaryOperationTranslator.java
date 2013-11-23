@@ -30,8 +30,7 @@ import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
 import org.jetbrains.k2js.translate.intrinsic.operation.BinaryOperationIntrinsic;
-import org.jetbrains.k2js.translate.reference.CallBuilder;
-import org.jetbrains.k2js.translate.reference.CallType;
+import org.jetbrains.k2js.translate.reference.MyCallBuilder;
 import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import static org.jetbrains.k2js.translate.operation.AssignmentTranslator.isAssignmentOperator;
@@ -129,23 +128,20 @@ public final class BinaryOperationTranslator extends AbstractTranslator {
     @NotNull
     private JsExpression translateAsOverloadedBinaryOperation() {
         ResolvedCall<?> resolvedCall = getResolvedCall(bindingContext(), expression.getOperationReference());
-        CallBuilder callBuilder = setReceiverAndArguments(resolvedCall);
-        JsExpression result = callBuilder.type(CallType.NORMAL).translate();
+        JsExpression result = translateCall(resolvedCall);
         return mayBeWrapWithNegation(result);
     }
 
     @NotNull
-    private CallBuilder setReceiverAndArguments(ResolvedCall<?> resolvedCall) {
-        CallBuilder callBuilder = CallBuilder.build(context(), resolvedCall);
-
+    private JsExpression translateCall(ResolvedCall<?> resolvedCall) {
         JsExpression leftExpression = translateLeftExpression(context(), expression);
         JsExpression rightExpression = translateRightExpression(context(), expression);
 
         if (isInOrNotInOperation(expression)) {
-            return callBuilder.receiver(rightExpression).args(leftExpression);
+            return new MyCallBuilder(context(), resolvedCall, rightExpression).args(leftExpression).translate();
         }
         else {
-            return callBuilder.receiver(leftExpression).args(rightExpression);
+            return new MyCallBuilder(context(), resolvedCall, leftExpression).args(rightExpression).translate();
         }
     }
 

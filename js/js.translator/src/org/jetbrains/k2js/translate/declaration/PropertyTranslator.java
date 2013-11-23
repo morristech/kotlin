@@ -29,8 +29,7 @@ import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.expression.FunctionTranslator;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
 import org.jetbrains.k2js.translate.general.Translation;
-import org.jetbrains.k2js.translate.reference.CallBuilder;
-import org.jetbrains.k2js.translate.reference.CallType;
+import org.jetbrains.k2js.translate.reference.MyCallBuilder;
 import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
 import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
@@ -142,11 +141,7 @@ public final class PropertyTranslator extends AbstractTranslator {
     }
 
     private JsExpression getDelegateCall(ResolvedCall<FunctionDescriptor> call, List<JsExpression> args) {
-        return CallBuilder.build(context(), call)
-                .receiver(getDelegateNameRef(getPropertyName()))
-                .args(args)
-                .type(CallType.NORMAL)
-                .translate();
+        return new MyCallBuilder(context(), call, getDelegateNameRef(getPropertyName())).args(args).translate();
     }
 
     private String getPropertyName() {

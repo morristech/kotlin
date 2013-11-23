@@ -23,16 +23,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.psi.JetUnaryExpression;
 import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.k2js.translate.context.TranslationContext;
-import org.jetbrains.k2js.translate.reference.CallBuilder;
+import org.jetbrains.k2js.translate.reference.MyCallBuilder;
 import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import static org.jetbrains.k2js.translate.general.Translation.translateAsExpression;
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getResolvedCall;
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getBaseExpression;
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getOperationToken;
-import static org.jetbrains.k2js.translate.utils.TranslationUtils.isEqualLikeOperator;
-import static org.jetbrains.k2js.translate.utils.TranslationUtils.sure;
-import static org.jetbrains.k2js.translate.utils.TranslationUtils.translateExclForBinaryEqualLikeExpr;
+import static org.jetbrains.k2js.translate.utils.TranslationUtils.*;
 
 public final class UnaryOperationTranslator {
     private UnaryOperationTranslator() {
@@ -56,9 +54,10 @@ public final class UnaryOperationTranslator {
             return translateExclForBinaryEqualLikeExpr((JsBinaryOperation) baseExpression);
         }
 
-        return CallBuilder.build(context, getResolvedCall(context.bindingContext(), expression.getOperationReference()))
-                .receiver(TranslationUtils.translateBaseExpression(context, expression))
-                .translate();
+        return new MyCallBuilder(context,
+                                 getResolvedCall(context.bindingContext(), expression.getOperationReference()),
+                                 TranslationUtils.translateBaseExpression(context, expression)
+        ).translate();
     }
 
     private static boolean isExclForBinaryEqualLikeExpr(@NotNull JetUnaryExpression expression, @NotNull JsExpression baseExpression) {

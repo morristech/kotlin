@@ -75,8 +75,9 @@ public class ArrayAccessTranslator extends AbstractTranslator implements AccessT
     private JsExpression translateAsMethodCall(@NotNull JsExpression arrayExpression,
                                                @NotNull List<JsExpression> arguments,
                                                boolean isGetter) {
-        return CallBuilder.build(context(), BindingUtils.getResolvedCallForArrayAccess(bindingContext(), expression, isGetter))
-                .receiver(arrayExpression)
+        return new MyCallBuilder(context(),
+                                 BindingUtils.getResolvedCallForArrayAccess(bindingContext(), expression, isGetter),
+                                 arrayExpression)
                 .args(arguments)
                 .translate();
     }

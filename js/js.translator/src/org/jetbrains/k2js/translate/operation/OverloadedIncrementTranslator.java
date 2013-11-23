@@ -25,6 +25,7 @@ import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.reference.CallBuilder;
+import org.jetbrains.k2js.translate.reference.MyCallBuilder;
 
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getFunctionDescriptorForOperationExpression;
 
@@ -48,9 +49,7 @@ public final class OverloadedIncrementTranslator extends IncrementTranslator {
         ResolvedCall<? extends CallableDescriptor> resolvedCall =
                 context().bindingContext().get(BindingContext.RESOLVED_CALL, expression.getOperationReference());
         assert resolvedCall != null;
-        return CallBuilder.build(context(), resolvedCall)
-                .receiver(receiver)
-                .translate();
+        return new MyCallBuilder(context(), resolvedCall, receiver).translate();
     }
 
 }
