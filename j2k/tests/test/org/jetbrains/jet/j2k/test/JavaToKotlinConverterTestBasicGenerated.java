@@ -1233,6 +1233,11 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/importStatement/importWithStar.jav");
         }
         
+        @TestMetadata("oneImport.jav")
+        public void testOneImport() throws Exception {
+            doTest("j2k/tests/testData/ast/importStatement/oneImport.jav");
+        }
+        
         @TestMetadata("onlyImports.jav")
         public void testOnlyImports() throws Exception {
             doTest("j2k/tests/testData/ast/importStatement/onlyImports.jav");
@@ -1586,7 +1591,6 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
     }
     
     @TestMetadata("j2k/tests/testData/ast/misc")
-    @InnerTestClasses({})
     public static class Misc extends AbstractJavaToKotlinConveterTestBasic {
         public void testAllFilesPresentInMisc() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("j2k/tests/testData/ast/misc"), Pattern.compile("^(.+)\\.jav$"), true);
@@ -1622,11 +1626,6 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
             doTest("j2k/tests/testData/ast/misc/packageWithStaticImports.jav");
         }
         
-        public static Test innerSuite() {
-            TestSuite suite = new TestSuite("Misc");
-            suite.addTestSuite(Misc.class);
-            return suite;
-        }
     }
     
     @TestMetadata("j2k/tests/testData/ast/newClassExpression")
@@ -2299,7 +2298,7 @@ public class JavaToKotlinConverterTestBasicGenerated extends AbstractJavaToKotli
         suite.addTestSuite(LiteralExpression.class);
         suite.addTestSuite(LocalVariable.class);
         suite.addTestSuite(MethodCallExpression.class);
-        suite.addTest(Misc.innerSuite());
+        suite.addTestSuite(Misc.class);
         suite.addTestSuite(NewClassExpression.class);
         suite.addTestSuite(ObjectLiteral.class);
         suite.addTestSuite(OutProjectionType.class);
