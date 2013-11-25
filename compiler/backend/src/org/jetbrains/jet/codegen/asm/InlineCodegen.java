@@ -40,6 +40,9 @@ import org.jetbrains.jet.codegen.signature.JvmMethodParameterSignature;
 import org.jetbrains.jet.codegen.signature.JvmMethodSignature;
 import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.codegen.state.JetTypeMapper;
+import org.jetbrains.jet.descriptors.serialization.JavaProtoBuf;
+import org.jetbrains.jet.descriptors.serialization.ProtoBuf;
+import org.jetbrains.jet.descriptors.serialization.descriptors.DeserializedSimpleFunctionDescriptor;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.BindingContext;
@@ -49,6 +52,7 @@ import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
 import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
 import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.jet.lang.resolve.name.Name;
 
 import java.io.*;
 import java.util.*;
@@ -145,7 +149,25 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         PsiElement element = BindingContextUtils.descriptorToDeclaration(bindingContext, functionDescriptor);
         VirtualFile file = null;
         if (element == null) {
-            file = findVirtualFileContainingDescriptor(state.getProject(), functionDescriptor);
+            boolean isDeserialized = functionDescriptor instanceof DeserializedSimpleFunctionDescriptor;
+            DeclarationDescriptor parentDeclatation = functionDescriptor.getContainingDeclaration();
+            if (isDeserialized && parentDeclatation instanceof NamespaceDescriptor) {
+                DeserializedSimpleFunctionDescriptor deserializedDescriptor = (DeserializedSimpleFunctionDescriptor) functionDescriptor;
+                ProtoBuf.Callable proto = deserializedDescriptor.getFunctionProto();
+                if (proto.hasExtension(JavaProtoBuf.implClassName)) {
+                    Name name = deserializedDescriptor.getNameResolver().getName(proto.getExtension(JavaProtoBuf.implClassName));
+                    FqName namespaceFqName =
+                            PackageClassUtils.getPackageClassFqName(((NamespaceDescriptor) parentDeclatation).getFqName()).parent().child(
+                                    name);
+                    file = findVirtualFile(state.getProject(), namespaceFqName);
+                } else {
+                    assert false : "Function in namespace should have implClassName property in proto: " + functionDescriptor;
+                }
+            }
+
+            if (file == null) {
+                file = findVirtualFileContainingDescriptor(state.getProject(), functionDescriptor);
+            }
         } else {
             file = element.getContainingFile().getVirtualFile();
         }
@@ -637,6 +659,10 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         if (containerFqName == null) {
             return null;
         }
+        return findVirtualFile(project, containerFqName);
+    }
+
+    private static VirtualFile findVirtualFile(Project project, FqName containerFqName) {
         VirtualFileFinder fileFinder = ServiceManager.getService(project, VirtualFileFinder.class);
         VirtualFile virtualFile = fileFinder.find(containerFqName);
         if (virtualFile == null) {
