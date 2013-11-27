@@ -21,6 +21,8 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
+import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
+import org.jetbrains.jet.lang.descriptors.ClassKind;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
@@ -31,6 +33,7 @@ import org.jetbrains.k2js.translate.intrinsic.Intrinsics;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.jetbrains.k2js.translate.context.Namer.getClassObjectAccessor;
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getDescriptorForElement;
 import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getExpectedReceiverDescriptor;
 
@@ -282,6 +285,14 @@ public class TranslationContext {
 
         if (usageTracker != null) {
             usageTracker.triggerUsed(effectiveDescriptor);
+        }
+
+        if (effectiveDescriptor instanceof ClassDescriptor) {
+            if (((ClassDescriptor) effectiveDescriptor).getKind() == ClassKind.CLASS_OBJECT) {
+                DeclarationDescriptor classDeclaration = effectiveDescriptor.getContainingDeclaration();
+                assert classDeclaration != null : "Class declaration for class object must be not null";
+                return getClassObjectAccessor(getQualifiedReference(classDeclaration));
+            }
         }
 
         JsExpression alias = aliasingContext.getAliasForDescriptor(effectiveDescriptor);
