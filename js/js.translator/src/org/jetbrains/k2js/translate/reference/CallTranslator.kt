@@ -46,6 +46,7 @@ import com.google.dart.compiler.backend.js.ast.JsLiteral
 import org.jetbrains.jet.lang.descriptors.PropertyDescriptor
 import org.jetbrains.jet.lang.resolve.DescriptorFactory
 import org.jetbrains.jet.lang.descriptors.impl.PropertyDescriptorImpl
+import org.jetbrains.k2js.translate.utils.JsAstUtils
 
 
 private fun safeGetValue(descriptor : ReceiverParameterDescriptor?) : ReceiverValue {
@@ -142,6 +143,9 @@ class MyCallBuilder(context: TranslationContext,
         if (consumer == CallEvaluator.PROPERTY_GET) {
             return propertyIntrinsic(true) ?: consumer.compute(inf())!!
         }
+        if (consumer == CallEvaluator.PROPERTY_SET) {
+            return propertyIntrinsic(false) ?: consumer.compute(inf())!!
+        }
         return intrinsic() ?: consumer.compute(inf())!!
     }
 
@@ -154,7 +158,7 @@ enum abstract class CallEvaluator {
 
     SIMPLE_CALL : CallEvaluator() {
         override fun compute(inf: CallInfo): JsExpression? {
-            return JsInvocation(inf.getFunctionRef(), inf.arguments)
+            return inf.wrapUseCallType(JsInvocation(inf.getFunctionRef(), inf.arguments))
         }
     }
 
@@ -162,14 +166,30 @@ enum abstract class CallEvaluator {
         override fun compute(inf: CallInfo): JsExpression? {
             if (inf.isExtension) {
                 val propertyGetName = Namer.getNameForAccessor(inf.functionName.getIdent()!!, true, false)
-                return JsInvocation(inf.getFunctionRef(propertyGetName), inf.arguments)
+                return inf.wrapUseCallType(JsInvocation(inf.getFunctionRef(propertyGetName), inf.arguments))
             }
             if (inf.isSuperInvocation()) {
                 val propertyName = inf.context.program().getStringLiteral(inf.functionName.getIdent())
                 val callSuperGet = JsInvocation(inf.context.namer().getCallGetProperty(), JsLiteral.THIS, inf.qualifier, propertyName)
                 return inf.wrapUseCallType(callSuperGet)
             }
-            return inf.getFunctionRef()
+            return inf.wrapUseCallType(inf.getFunctionRef())
+        }
+    }
+
+    PROPERTY_SET : CallEvaluator() {
+        override fun compute(inf: CallInfo): JsExpression? {
+            if (inf.isExtension) {
+                val propertyGetName = Namer.getNameForAccessor(inf.functionName.getIdent()!!, false, false)
+                return inf.wrapUseCallType(JsInvocation(inf.getFunctionRef(propertyGetName), inf.arguments))
+            }
+            val value = inf.arguments.first!!
+            if (inf.isSuperInvocation()) {
+                val propertyName = inf.context.program().getStringLiteral(inf.functionName.getIdent())
+                val callSuperGet = JsInvocation(inf.context.namer().getCallSetProperty(), JsLiteral.THIS, inf.qualifier, propertyName, value)
+                return inf.wrapUseCallType(callSuperGet)
+            }
+            return inf.wrapUseCallType(JsAstUtils.assignment(inf.getFunctionRef(), value))
         }
     }
 }
@@ -275,21 +295,19 @@ class CallInfo(val context: TranslationContext,
     }
 
     fun getFunctionRef(): JsExpression {
-        val functionRef = if (qualifier == null) {
+        return if (qualifier == null) {
             JsNameRef(functionName)
         } else {
             JsNameRef(functionName, qualifier)
         }
-        return wrapUseCallType(functionRef)
     }
 
     fun getFunctionRef(functionName: String): JsExpression {
-        val functionRef = if (qualifier == null) {
+        return if (qualifier == null) {
             JsNameRef(functionName)
         } else {
             JsNameRef(functionName, qualifier)
         }
-        return wrapUseCallType(functionRef)
     }
 
     fun isSuperInvocation() : Boolean {
