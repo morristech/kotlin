@@ -287,14 +287,6 @@ public class TranslationContext {
             usageTracker.triggerUsed(effectiveDescriptor);
         }
 
-        if (effectiveDescriptor instanceof ClassDescriptor) {
-            if (((ClassDescriptor) effectiveDescriptor).getKind() == ClassKind.CLASS_OBJECT) {
-                DeclarationDescriptor classDeclaration = effectiveDescriptor.getContainingDeclaration();
-                assert classDeclaration != null : "Class declaration for class object must be not null";
-                return getClassObjectAccessor(getQualifiedReference(classDeclaration));
-            }
-        }
-
         JsExpression alias = aliasingContext.getAliasForDescriptor(effectiveDescriptor);
         return alias == null ? JsLiteral.THIS : alias;
     }
