@@ -72,9 +72,8 @@ public final class KotlinPropertyAccessTranslator extends PropertyAccessTranslat
             getter = getterImpl;
         }
         assert getter != null : "Getter for kotlin properties should bot be null.";
-        return callBuilderForAccessor(receiver)
-                .descriptor(getter)
-                .translate();
+        return new MyCallBuilder(context(), resolvedCall, receiver).callType(getCallType()).translate(CallEvaluator.PROPERTY_GET);
+        //return callBuilderForAccessor(receiver).descriptor(getter).translate();
     }
 
     @NotNull

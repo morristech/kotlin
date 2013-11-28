@@ -38,6 +38,8 @@ import org.jetbrains.jet.lang.resolve.BindingTraceContext
 import org.jetbrains.jet.lang.resolve.calls.tasks.TracingStrategy
 import org.jetbrains.jet.lang.resolve.calls.model.MutableDataFlowInfoForArguments
 import org.jetbrains.jet.lang.descriptors.ReceiverParameterDescriptor
+import com.google.dart.compiler.backend.js.ast.JsName
+import org.jetbrains.k2js.translate.context.Namer
 
 
 private fun safeGetValue(descriptor : ReceiverParameterDescriptor?) : ReceiverValue {
@@ -72,6 +74,10 @@ class MyCallBuilder(context: TranslationContext,
         }
     }
 
+    fun callType(callType: CallType): MyCallBuilder {
+        this.callType = callType
+        return this
+    }
     fun args(vararg args: JsExpression): MyCallBuilder {
         assert(arguments == Collections.EMPTY_LIST)
         arguments = args.toList()
@@ -85,10 +91,10 @@ class MyCallBuilder(context: TranslationContext,
     }
 
     private fun inf(): CallInfo {
-        return CallInfo(context(), resolvedCall, receiver, arguments, callType)
+        return CallInfo.build(context(), resolvedCall, receiver, arguments, callType)
     }
 
-    fun intrinsic (): JsExpression? {
+    fun intrinsic(): JsExpression? {
         val translator = CallTranslator(receiver,
                                         null,
                                         arguments,
@@ -106,8 +112,8 @@ class MyCallBuilder(context: TranslationContext,
         return intrinsic() ?: CallEvaluator.SIMPLE_CALL.compute(inf())!!
     }
 
-    fun translate(consumer: CallEvaluator): JsExpression? {
-        return consumer.compute(inf())
+    fun translate(consumer: CallEvaluator): JsExpression {
+        return intrinsic() ?: consumer.compute(inf())!!
     }
 
 
@@ -122,18 +128,96 @@ enum abstract class CallEvaluator {
             return JsInvocation(inf.getFunctionRef(), inf.arguments)
         }
     }
+
+    PROPERTY_GET : CallEvaluator() {
+        override fun compute(inf: CallInfo): JsExpression? {
+            if (inf.isExtention) {
+                val propertyGetName = Namer.getNameForAccessor(inf.functionName.getIdent()!!, true, false)
+                return JsInvocation(inf.getFunctionRef(propertyGetName), inf.arguments)
+            }
+            return inf.getFunctionRef()
+        }
+    }
 }
+
 
 class CallInfo(val context: TranslationContext,
                val resolvedCall: ResolvedCall<out CallableDescriptor>,
+               val originReceiver: JsExpression?,
+               val originArguments: List<JsExpression>,
+               val callType: CallType,
+               val isVariableAsFunctionCall: Boolean,
+               val isExtention: Boolean,
+               val callableDescriptor: CallableDescriptor,
+               val arguments: List<JsExpression>,
+               val qualifier: JsExpression?,
+               val functionName: JsName,
                val receiver: JsExpression?,
-               arguments: List<JsExpression>,
-               val callType: CallType = CallType.NORMAL) {
+               val thisObject: JsExpression?) {
 
-    val isVariableAsFunctionCall = resolvedCall is VariableAsFunctionResolvedCall
-    val isExtention = resolvedCall.getReceiverArgument() != ReceiverValue.NO_RECEIVER
-    val callableDescriptor = resolvedCall.getResultingDescriptor().getOriginal()
-    val arguments: List<JsExpression> = if (isExtention) TranslationUtils.generateInvocationArguments(receiver!!, arguments) else arguments
+    class object {
+        fun build(context: TranslationContext,
+                  resolvedCall: ResolvedCall<out CallableDescriptor>,
+                  originQualifier: JsExpression?,
+                  originArguments: List<JsExpression>,
+                  callType: CallType = CallType.NORMAL): CallInfo {
+
+            val isVariableAsFunctionCall = resolvedCall is VariableAsFunctionResolvedCall
+            val isExtention = resolvedCall.getReceiverArgument() != ReceiverValue.NO_RECEIVER
+            val callableDescriptor = resolvedCall.getResultingDescriptor().getOriginal()
+
+            var receiverKind = resolvedCall.getExplicitReceiverKind()
+            if (isExtention && receiverKind == THIS_OBJECT) { // TODO: temporary hack
+                receiverKind = RECEIVER_ARGUMENT
+            }
+            if (receiverKind == NO_EXPLICIT_RECEIVER && originQualifier != null) { // TODO: temporary hack
+                receiverKind = THIS_OBJECT
+            }
+
+            if (isVariableAsFunctionCall)     // TODO
+                throw UnsupportedOperationException("Now variableAsFunctionCall not supported")
+
+            val functionName = context.getNameForDescriptor(callableDescriptor)
+            val receiver = if (isExtention) {
+                if(receiverKind.isReceiver() && originQualifier != null) { // TODO: hack
+                    originQualifier
+                } else {
+                    context.getQualifierForDescriptor(callableDescriptor)
+                }
+            } else {
+                null
+            }
+
+            var thisObject = if (resolvedCall.getThisObject() == ReceiverValue.NO_RECEIVER) {
+                null
+            } else {
+                if (receiverKind.isThisObject() && originQualifier != null) {
+                    originQualifier
+                } else {
+                    context.getThisObject(getDeclarationDescriptorForReceiver(resolvedCall.getThisObject()))
+                }
+            }
+
+            var qualifier = if(thisObject != null) {
+                thisObject
+            } else {
+                context.getQualifierForDescriptor(callableDescriptor) // TODO: check
+            }
+
+            val arguments: List<JsExpression> = if (isExtention) {
+                TranslationUtils.generateInvocationArguments(receiver!!, originArguments)
+            } else {
+                originArguments
+            }
+
+            return CallInfo(context, resolvedCall, originQualifier, originArguments, callType, isVariableAsFunctionCall, isExtention,
+                            callableDescriptor, arguments, qualifier, functionName, receiver, thisObject)
+        }
+    }
+
+    {
+
+    }
 
     fun CallType.construct(construct0: (JsExpression?) -> JsExpression): JsExpression {
         val callConstructor: CallConstructor = object : CallConstructor {
@@ -141,42 +225,33 @@ class CallInfo(val context: TranslationContext,
                 return construct0(receiver)
             }
         }
-        return this.constructCall(receiver, callConstructor, context)
+        return this.constructCall(originReceiver, callConstructor, context)
     }
 
-    //  TODO simplify
-    fun getFunctionRef(): JsExpression {
-        when (resolvedCall.getExplicitReceiverKind()) {
-            NO_EXPLICIT_RECEIVER -> {
-                assert(receiver == null, "ResolvedCAll say, what call no receiver parameter")
-                return context.getQualifiedReference(callableDescriptor)
-            }
-            THIS_OBJECT -> {
-                val shortName = context.getNameForDescriptor(callableDescriptor)
-                val thisObject = context.getThisObject(getDeclarationDescriptorForReceiver(resolvedCall.getThisObject()))
-                if (isExtention) {
-                    return callType.construct { receiver -> JsNameRef(shortName, thisObject) }
-                }
-                else if (receiver != null) {
-                    return callType.construct { receiver -> JsNameRef(shortName, receiver) }
-                }
-                else {
-                    return JsNameRef(shortName, thisObject)
-                }
-            }
-            RECEIVER_ARGUMENT -> {
-                assert(receiver != null, "ResolvedCAll say, what call has receiver parameter")
-                return context.getQualifiedReference(callableDescriptor)
-            }
-            // TODO BOTH_RECEIVERS
-            else -> {
-                throw UnsupportedOperationException("not supported")
-            }
+    fun wrapUseCallType(functionRef: JsExpression): JsExpression {
+        if (originReceiver != null) {
+            return callType.construct {functionRef}
+        } else {
+            return functionRef
         }
     }
 
-    {
-        if (isVariableAsFunctionCall)
-            throw UnsupportedOperationException("Now variableAsFunctionCall not supported")
+    fun getFunctionRef(): JsExpression {
+        val functionRef = if (qualifier == null) {
+            JsNameRef(functionName)
+        } else {
+            JsNameRef(functionName, qualifier)
+        }
+        return wrapUseCallType(functionRef)
     }
+
+    fun getFunctionRef(functionName: String): JsExpression {
+        val functionRef = if (qualifier == null) {
+            JsNameRef(functionName)
+        } else {
+            JsNameRef(functionName, qualifier)
+        }
+        return wrapUseCallType(functionRef)
+    }
+
 }
