@@ -40,6 +40,12 @@ import org.jetbrains.jet.lang.resolve.calls.model.MutableDataFlowInfoForArgument
 import org.jetbrains.jet.lang.descriptors.ReceiverParameterDescriptor
 import com.google.dart.compiler.backend.js.ast.JsName
 import org.jetbrains.k2js.translate.context.Namer
+import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver
+import org.jetbrains.jet.lang.psi.JetSuperExpression
+import com.google.dart.compiler.backend.js.ast.JsLiteral
+import org.jetbrains.jet.lang.descriptors.PropertyDescriptor
+import org.jetbrains.jet.lang.resolve.DescriptorFactory
+import org.jetbrains.jet.lang.descriptors.impl.PropertyDescriptorImpl
 
 
 private fun safeGetValue(descriptor : ReceiverParameterDescriptor?) : ReceiverValue {
@@ -94,14 +100,34 @@ class MyCallBuilder(context: TranslationContext,
         return CallInfo.build(context(), resolvedCall, receiver, arguments, callType)
     }
 
+    fun propertyIntrinsic(isGet:Boolean): JsExpression? {
+        val descriptor = resolvedCall.getResultingDescriptor().getOriginal()
+        if (descriptor !is PropertyDescriptor) {
+            return null
+        }
+        val propertyDescriptor = descriptor as PropertyDescriptor
+        val accessorDescriptor = if (isGet) {
+            var getter = propertyDescriptor.getGetter()
+            if (getter == null) {
+                //TODO: Temporary hack!!! Rewrite codegen!
+                //Now for consistency we don't create default getter for object declaration property descriptor
+                val getterImpl = DescriptorFactory.createDefaultGetter(propertyDescriptor)
+                getterImpl.initialize(propertyDescriptor.getType())
+                ((propertyDescriptor as PropertyDescriptorImpl)).initialize(getterImpl, null)
+                getter = getterImpl
+            }
+            getter!!
+        } else {
+            propertyDescriptor.getSetter()!!
+        }
+
+        val translator = CallTranslator(receiver, null, arguments, resolvedCall, accessorDescriptor, callType, context())
+        return translator.intrinsicInvocation()
+    }
+
     fun intrinsic(): JsExpression? {
-        val translator = CallTranslator(receiver,
-                                        null,
-                                        arguments,
-                                        resolvedCall,
-                                        resolvedCall.getResultingDescriptor().getOriginal(),
-                                        callType,
-                                        context())
+        val translator = CallTranslator(receiver, null, arguments, resolvedCall, resolvedCall.getResultingDescriptor().getOriginal(),
+                                        callType, context())
         return translator.intrinsicInvocation()
     }
     fun simple(): JsExpression {
@@ -113,6 +139,9 @@ class MyCallBuilder(context: TranslationContext,
     }
 
     fun translate(consumer: CallEvaluator): JsExpression {
+        if (consumer == CallEvaluator.PROPERTY_GET) {
+            return propertyIntrinsic(true) ?: consumer.compute(inf())!!
+        }
         return intrinsic() ?: consumer.compute(inf())!!
     }
 
@@ -131,9 +160,14 @@ enum abstract class CallEvaluator {
 
     PROPERTY_GET : CallEvaluator() {
         override fun compute(inf: CallInfo): JsExpression? {
-            if (inf.isExtention) {
+            if (inf.isExtension) {
                 val propertyGetName = Namer.getNameForAccessor(inf.functionName.getIdent()!!, true, false)
                 return JsInvocation(inf.getFunctionRef(propertyGetName), inf.arguments)
+            }
+            if (inf.isSuperInvocation()) {
+                val propertyName = inf.context.program().getStringLiteral(inf.functionName.getIdent())
+                val callSuperGet = JsInvocation(inf.context.namer().getCallGetProperty(), JsLiteral.THIS, inf.qualifier, propertyName)
+                return inf.wrapUseCallType(callSuperGet)
             }
             return inf.getFunctionRef()
         }
@@ -147,7 +181,7 @@ class CallInfo(val context: TranslationContext,
                val originArguments: List<JsExpression>,
                val callType: CallType,
                val isVariableAsFunctionCall: Boolean,
-               val isExtention: Boolean,
+               val isExtension: Boolean,
                val callableDescriptor: CallableDescriptor,
                val arguments: List<JsExpression>,
                val qualifier: JsExpression?,
@@ -163,11 +197,11 @@ class CallInfo(val context: TranslationContext,
                   callType: CallType = CallType.NORMAL): CallInfo {
 
             val isVariableAsFunctionCall = resolvedCall is VariableAsFunctionResolvedCall
-            val isExtention = resolvedCall.getReceiverArgument() != ReceiverValue.NO_RECEIVER
+            val isExtension = resolvedCall.getReceiverArgument() != ReceiverValue.NO_RECEIVER
             val callableDescriptor = resolvedCall.getResultingDescriptor().getOriginal()
 
             var receiverKind = resolvedCall.getExplicitReceiverKind()
-            if (isExtention && receiverKind == THIS_OBJECT) { // TODO: temporary hack
+            if (isExtension && receiverKind == THIS_OBJECT) { // TODO: temporary hack
                 receiverKind = RECEIVER_ARGUMENT
             }
             if (receiverKind == NO_EXPLICIT_RECEIVER && originQualifier != null) { // TODO: temporary hack
@@ -178,9 +212,13 @@ class CallInfo(val context: TranslationContext,
                 throw UnsupportedOperationException("Now variableAsFunctionCall not supported")
 
             val functionName = context.getNameForDescriptor(callableDescriptor)
-            val receiver = if (isExtention) {
-                if(receiverKind.isReceiver() && originQualifier != null) { // TODO: hack
-                    originQualifier
+            val receiver = if (isExtension) {
+                if(receiverKind.isReceiver()) { // TODO: hack
+                    if (originQualifier != null) {
+                        originQualifier
+                    } else {
+                        context.getThisObject(getDeclarationDescriptorForReceiver(resolvedCall.getReceiverArgument()))
+                    }
                 } else {
                     context.getQualifierForDescriptor(callableDescriptor)
                 }
@@ -204,13 +242,13 @@ class CallInfo(val context: TranslationContext,
                 context.getQualifierForDescriptor(callableDescriptor) // TODO: check
             }
 
-            val arguments: List<JsExpression> = if (isExtention) {
+            val arguments: List<JsExpression> = if (isExtension) {
                 TranslationUtils.generateInvocationArguments(receiver!!, originArguments)
             } else {
                 originArguments
             }
 
-            return CallInfo(context, resolvedCall, originQualifier, originArguments, callType, isVariableAsFunctionCall, isExtention,
+            return CallInfo(context, resolvedCall, originQualifier, originArguments, callType, isVariableAsFunctionCall, isExtension,
                             callableDescriptor, arguments, qualifier, functionName, receiver, thisObject)
         }
     }
@@ -253,5 +291,11 @@ class CallInfo(val context: TranslationContext,
         }
         return wrapUseCallType(functionRef)
     }
+
+    fun isSuperInvocation() : Boolean {
+        val thisObject = resolvedCall.getThisObject()
+        return thisObject is ExpressionReceiver && ((thisObject as ExpressionReceiver)).getExpression() is JetSuperExpression
+    }
+
 
 }
