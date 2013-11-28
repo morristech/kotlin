@@ -4,4 +4,8 @@ fun test() {
     if<caret>
 }
 
-// ORDER: if, ifMore, isFirst
+// ORDER: if
+// ORDER: ifMore
+// ORDER: isFirst
+// ORDER: ifn
+// SELECTED: 0

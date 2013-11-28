@@ -1,6 +1,7 @@
 fun test() {
-    val a = 12
-    a<caret>
+    val anon = 12
+    an<caret>
 }
 
-// ORDER: a, as
+// ORDER: anon, anonymous
+// SELECTED: 0
