@@ -72,7 +72,7 @@ public final class KotlinPropertyAccessTranslator extends PropertyAccessTranslat
             getter = getterImpl;
         }
         assert getter != null : "Getter for kotlin properties should bot be null.";
-        return new MyCallBuilder(context(), resolvedCall, receiver).callType(getCallType()).translate(CallEvaluator.PROPERTY_GET);
+        return new MyCallBuilder(context(), resolvedCall, receiver).callType(getCallType()).translate(CallEvaluatorImpl.PROPERTY_GET);
         //return callBuilderForAccessor(receiver).descriptor(getter).translate();
     }
 
@@ -91,7 +91,7 @@ public final class KotlinPropertyAccessTranslator extends PropertyAccessTranslat
     public JsExpression translateAsSet(@Nullable JsExpression receiver, @NotNull JsExpression toSetTo) {
         PropertySetterDescriptor setter = propertyDescriptor.getSetter();
         assert setter != null : "Setter for kotlin properties should not be null.";
-        return new MyCallBuilder(context(), resolvedCall, receiver).callType(getCallType()).args(toSetTo).translate(CallEvaluator.PROPERTY_SET);
+        return new MyCallBuilder(context(), resolvedCall, receiver).callType(getCallType()).args(toSetTo).translate(CallEvaluatorImpl.PROPERTY_SET);
         //return callBuilderForAccessor(receiver).args(toSetTo).descriptor(setter).translate();
     }
 

@@ -132,18 +132,18 @@ class MyCallBuilder(context: TranslationContext,
         return translator.intrinsicInvocation()
     }
     fun simple(): JsExpression {
-        return CallEvaluator.SIMPLE_CALL.compute(inf())!!
+        return CallEvaluatorImpl.SIMPLE_CALL.compute(inf())!!
     }
 
     fun translate(): JsExpression {
-        return intrinsic() ?: CallEvaluator.SIMPLE_CALL.compute(inf())!!
+        return intrinsic() ?: CallEvaluatorImpl.SIMPLE_CALL.compute(inf())!!
     }
 
     fun translate(consumer: CallEvaluator): JsExpression {
-        if (consumer == CallEvaluator.PROPERTY_GET) {
+        if (consumer == CallEvaluatorImpl.PROPERTY_GET) {
             return propertyIntrinsic(true) ?: consumer.compute(inf())!!
         }
-        if (consumer == CallEvaluator.PROPERTY_SET) {
+        if (consumer == CallEvaluatorImpl.PROPERTY_SET) {
             return propertyIntrinsic(false) ?: consumer.compute(inf())!!
         }
         return intrinsic() ?: consumer.compute(inf())!!
@@ -152,17 +152,19 @@ class MyCallBuilder(context: TranslationContext,
 
 }
 
-enum abstract class CallEvaluator {
+trait CallEvaluator {
+    fun compute(inf: CallInfo): JsExpression?
+}
 
-    abstract fun compute(inf: CallInfo): JsExpression?
+enum abstract class CallEvaluatorImpl : CallEvaluator {
 
-    SIMPLE_CALL : CallEvaluator() {
+    SIMPLE_CALL : CallEvaluatorImpl() {
         override fun compute(inf: CallInfo): JsExpression? {
             return inf.wrapUseCallType(JsInvocation(inf.getFunctionRef(), inf.arguments))
         }
     }
 
-    PROPERTY_GET : CallEvaluator() {
+    PROPERTY_GET : CallEvaluatorImpl() {
         override fun compute(inf: CallInfo): JsExpression? {
             if (inf.isExtension) {
                 val propertyGetName = Namer.getNameForAccessor(inf.functionName.getIdent()!!, true, false)
@@ -177,7 +179,7 @@ enum abstract class CallEvaluator {
         }
     }
 
-    PROPERTY_SET : CallEvaluator() {
+    PROPERTY_SET : CallEvaluatorImpl() {
         override fun compute(inf: CallInfo): JsExpression? {
             if (inf.isExtension) {
                 val propertyGetName = Namer.getNameForAccessor(inf.functionName.getIdent()!!, false, false)
