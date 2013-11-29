@@ -16,12 +16,11 @@
 
 package org.jetbrains.k2js.translate.reference;
 
-import com.google.dart.compiler.backend.js.ast.JsExpression;
-import com.google.dart.compiler.backend.js.ast.JsName;
-import com.google.dart.compiler.backend.js.ast.JsNameRef;
+import com.google.dart.compiler.backend.js.ast.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
+import org.jetbrains.jet.lang.descriptors.ConstructorDescriptor;
 import org.jetbrains.jet.lang.psi.JetCallExpression;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
@@ -32,6 +31,7 @@ import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.Translation;
 import org.jetbrains.k2js.translate.utils.AnnotationsUtils;
 import org.jetbrains.k2js.translate.utils.PsiUtils;
+import sun.management.resources.agent;
 
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getCallee;
 
@@ -49,9 +49,9 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
     }
 
     private final boolean isNativeFunctionCall;
-    private CallArgumentTranslator.ArgumentsInfo argumentsInfo = null;
     private JsExpression translatedReceiver = null;
     private JsExpression translatedCallee = null;
+    CallArgumentTranslator.ArgumentsInfo argumentsInfo = null;
 
     private CallExpressionTranslator(@NotNull JetCallExpression expression,
             @Nullable JsExpression receiver,
@@ -64,12 +64,9 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
     private JsExpression translate() {
         prepareToBuildCall();
 
-        return CallBuilder.build(context(), getResolvedCall())
-                .receiver(translatedReceiver)
-                .callee(translatedCallee)
-                .args(argumentsInfo.getTranslateArguments())
-                .type(callType)
-                .translate();
+        return new MyCallBuilder(context(), resolvedCall, translatedReceiver).args(argumentsInfo.getTranslateArguments()).translate(
+                new CallExpressionEvaluator(argumentsInfo));
+        //return CallBuilder.build(context(), getResolvedCall()).receiver(translatedReceiver).callee(translatedCallee).args(argumentsInfo.getTranslateArguments()).type(callType).translate();
     }
 
     private void prepareToBuildCall() {
@@ -131,4 +128,24 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
         return Translation.translateAsExpression(getCallee(expression), context());
     }
 
+    private class CallExpressionEvaluator implements CallEvaluator {
+        private final CallArgumentTranslator.ArgumentsInfo argumentsInfo;
+
+        private CallExpressionEvaluator(CallArgumentTranslator.ArgumentsInfo argumentsInfo) {
+            this.argumentsInfo = argumentsInfo;
+        }
+
+        @Nullable
+        @Override
+        public JsExpression compute(CallInfo inf) {
+            if (inf.getIsExtension()) {
+                return new JsInvocation(inf.getFunctionRef(), inf.getArguments());
+            }
+            if (inf.getCallableDescriptor() instanceof ConstructorDescriptor) {
+                return new JsNew(inf.getFunctionRef(), inf.getArguments());
+            }
+            return new JsInvocation(inf.getFunctionRef(), inf.getArguments());
+        }
+    }
+    
 }

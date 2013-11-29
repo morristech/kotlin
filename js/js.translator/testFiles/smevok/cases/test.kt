@@ -1,27 +1,16 @@
 package foo.bar
 
-trait T {
-    class object {
-        val a = 1
+
+val Collection<*>.indices : IntRange
+    get() = 0..3
+
+public inline fun <T> List<T>.forEachWithIndex(operation : (Int, T) -> Unit) {
+    for (index in indices) {
+        operation(index, get(index))
     }
 }
 
-class A : T {
-    val a = 3
-    class object {
-        val a = 2
-    }
-}
 
-fun foo(): Int = 4
-
-public fun box(): String {
-    if (T.a != 1) return "T.a != 1, it: ${T.a}"
-    if (A.a != 2) return "A.a != 2, it: ${A.a}"
-    if (A().a != 3) return "A().a != 3, it: ${A().a}"
-    if (foo() != 4) return "foo() != 4, it: ${foo()}"
-    A()
-    A.a
-    foo()
-    return  "OK"
+fun box(): String {
+    return "OK"
 }

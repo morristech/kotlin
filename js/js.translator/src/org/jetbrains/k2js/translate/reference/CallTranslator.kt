@@ -197,7 +197,7 @@ enum abstract class CallEvaluatorImpl : CallEvaluator {
 }
 
 
-class CallInfo(val context: TranslationContext,
+class CallInfo private(val context: TranslationContext,
                val resolvedCall: ResolvedCall<out CallableDescriptor>,
                val originReceiver: JsExpression?,
                val originArguments: List<JsExpression>,
@@ -288,11 +288,11 @@ class CallInfo(val context: TranslationContext,
         return this.constructCall(originReceiver, callConstructor, context)
     }
 
-    fun wrapUseCallType(functionRef: JsExpression): JsExpression {
+    fun wrapUseCallType(resultExpression: JsExpression): JsExpression {
         if (originReceiver != null) {
-            return callType.construct {functionRef}
+            return callType.construct { resultExpression }
         } else {
-            return functionRef
+            return resultExpression
         }
     }
 
