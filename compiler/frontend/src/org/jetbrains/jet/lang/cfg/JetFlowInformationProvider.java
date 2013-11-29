@@ -55,8 +55,8 @@ public class JetFlowInformationProvider {
 
     private final JetElement subroutine;
     private final Pseudocode pseudocode;
-    private final PseudocodeVariablesData pseudocodeVariablesData;
-    private BindingTrace trace;
+    private final BindingTrace trace;
+    private PseudocodeVariablesData pseudocodeVariablesData;
 
     public JetFlowInformationProvider(
             @NotNull JetElement declaration,
@@ -65,7 +65,13 @@ public class JetFlowInformationProvider {
         subroutine = declaration;
         this.trace = trace;
         pseudocode = new JetControlFlowProcessor(trace).generatePseudocode(declaration);
-        pseudocodeVariablesData = new PseudocodeVariablesData(pseudocode, trace.getBindingContext());
+    }
+
+    public PseudocodeVariablesData getPseudocodeVariablesData() {
+        if (pseudocodeVariablesData == null) {
+            pseudocodeVariablesData = new PseudocodeVariablesData(pseudocode, trace.getBindingContext());
+        }
+        return pseudocodeVariablesData;
     }
 
     private void collectReturnExpressions(@NotNull final Collection<JetElement> returnedExpressions) {
@@ -183,6 +189,7 @@ public class JetFlowInformationProvider {
         final Collection<VariableDescriptor> varWithValReassignErrorGenerated = Sets.newHashSet();
         final boolean processClassOrObject = subroutine instanceof JetClassOrObject;
 
+        PseudocodeVariablesData pseudocodeVariablesData = getPseudocodeVariablesData();
         Map<Instruction, Edges<Map<VariableDescriptor,VariableInitState>>> initializers = pseudocodeVariablesData.getVariableInitializers();
         final Set<VariableDescriptor> declaredVariables = pseudocodeVariablesData.getDeclaredVariables(pseudocode, true);
 
@@ -222,6 +229,7 @@ public class JetFlowInformationProvider {
     }
 
     public void recordInitializedVariables() {
+        PseudocodeVariablesData pseudocodeVariablesData = getPseudocodeVariablesData();
         Pseudocode pseudocode = pseudocodeVariablesData.getPseudocode();
         Map<Instruction, Edges<Map<VariableDescriptor,VariableInitState>>> initializers = pseudocodeVariablesData.getVariableInitializers();
         recordInitializedVariables(pseudocode, initializers);
@@ -420,7 +428,7 @@ public class JetFlowInformationProvider {
 
     private void recordInitializedVariables(@NotNull Pseudocode pseudocode, @NotNull Map<Instruction, Edges<Map<VariableDescriptor,PseudocodeVariablesData.VariableInitState>>> initializersMap) {
         Edges<Map<VariableDescriptor, VariableInitState>> initializers = initializersMap.get(pseudocode.getExitInstruction());
-        Set<VariableDescriptor> declaredVariables = pseudocodeVariablesData.getDeclaredVariables(pseudocode, false);
+        Set<VariableDescriptor> declaredVariables = getPseudocodeVariablesData().getDeclaredVariables(pseudocode, false);
         for (VariableDescriptor variable : declaredVariables) {
             if (variable instanceof PropertyDescriptor) {
                 PseudocodeVariablesData.VariableInitState variableInitState = initializers.in.get(variable);
@@ -434,6 +442,7 @@ public class JetFlowInformationProvider {
 //  "Unused variable" & "unused value" analyses
 
     public void markUnusedVariables() {
+        final PseudocodeVariablesData pseudocodeVariablesData = getPseudocodeVariablesData();
         Map<Instruction, Edges<Map<VariableDescriptor, VariableUseState>>> variableStatusData = pseudocodeVariablesData.getVariableUseStatusData();
         final Map<Instruction, DiagnosticFactory> reportedDiagnosticMap = Maps.newHashMap();
         InstructionDataAnalyzeStrategy<Map<VariableDescriptor, VariableUseState>> variableStatusAnalyzeStrategy =
@@ -517,7 +526,6 @@ public class JetFlowInformationProvider {
 //  "Unused literals" in block
 
     public void markUnusedLiteralsInBlock() {
-        assert pseudocode != null;
         final Map<Instruction, DiagnosticFactory> reportedDiagnosticMap = Maps.newHashMap();
         PseudocodeTraverser.traverse(
                 pseudocode, FORWARD, new InstructionAnalyzeStrategy() {
