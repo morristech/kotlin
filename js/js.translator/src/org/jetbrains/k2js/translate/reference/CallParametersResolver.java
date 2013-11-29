@@ -62,6 +62,9 @@ public final class CallParametersResolver {
         this.callee = callee;
         this.descriptor = descriptor;
         this.context = context;
+        if (call instanceof VariableAsFunctionResolvedCall) {
+            call = ((VariableAsFunctionResolvedCall) call).getFunctionCall();
+        }
         this.resolvedCall = call;
         this.isExtensionCall = resolvedCall.getReceiverArgument().exists();
     }
@@ -104,11 +107,13 @@ public final class CallParametersResolver {
         }
     }
 
-    @NotNull
+    @Nullable
     private JsExpression getExtensionFunctionCallReceiver() {
         if (qualifier != null) {
             return qualifier;
         }
-        return context.getThisObject(((ThisReceiver) resolvedCall.getReceiverArgument()).getDeclarationDescriptor());
+        if (resolvedCall.getReceiverArgument() instanceof ThisReceiver)
+            return context.getThisObject(((ThisReceiver) resolvedCall.getReceiverArgument()).getDeclarationDescriptor());
+        else return null;
     }
 }
