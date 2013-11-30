@@ -30,9 +30,6 @@ import java.util.*
 import com.intellij.psi.CommonClassNames.*
 import org.jetbrains.jet.lang.types.expressions.OperatorConventions.*
 import com.intellij.psi.util.PsiUtil
-import org.jetbrains.jet.lang.resolve.name.FqName
-import org.jetbrains.jet.util.QualifiedNamesUtil
-import org.jetbrains.jet.lang.resolve.java.mapping.JavaToKotlinClassMap
 import com.intellij.openapi.project.Project
 
 public class Converter(val project: Project, val settings: ConverterSettings) {
@@ -77,11 +74,9 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
     public fun fileToFile(javaFile: PsiJavaFile): File {
         val body = ArrayList<Node>()
         for (element in javaFile.getChildren()) {
-            if (element !is PsiImportStatementBase) {
-                val node = topElementToElement(element)
-                if (node != null) {
-                    body.add(node)
-                }
+            val node = topElementToElement(element)
+            if (node != null) {
+                body.add(node)
             }
         }
         return File(quoteKeywords(javaFile.getPackageName()), body, createMainFunction(javaFile))
@@ -148,7 +143,7 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
             for (m in members) {
                 if (m is Constructor) {
                     if (!m.isPrimary) {
-                        for (fo in finalOrWithEmptyInitializer){
+                        for (fo in finalOrWithEmptyInitializer) {
                             val init = getDefaultInitializer(fo)
                             initializers.put(fo.identifier.toKotlin(), init)
                         }
