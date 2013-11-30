@@ -266,7 +266,7 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
 
         if (method.isConstructor()) {
             return Constructor(this, identifier, docComments, modifiers, returnType, typeParameters, params,
-                               Block(removeEmpty(body.statements), false), isConstructorPrimary(method))
+                               Block(body.statements), isConstructorPrimary(method))
         }
 
         return Function(this, identifier, docComments, modifiers, returnType, typeParameters, params, body)
@@ -287,7 +287,7 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         if (block == null)
             return Block.EMPTY_BLOCK
 
-        return Block(removeEmpty(statementsToStatementList(block.getChildren())), notEmpty)
+        return Block(statementsToStatementList(block.getChildren()), notEmpty)
     }
 
     public fun blockToBlock(block: PsiCodeBlock?): Block {
