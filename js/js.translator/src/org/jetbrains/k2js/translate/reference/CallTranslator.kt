@@ -73,7 +73,6 @@ class MyCallBuilder(context: TranslationContext,
                     private val resolvedCall: ResolvedCall<out CallableDescriptor>,
                     private val receiver: JsExpression?) : AbstractTranslator(context) {
     var arguments: List<JsExpression> = Collections.emptyList()
-    var callType: CallType = CallType.NORMAL
 
     class object {
         fun build(context: TranslationContext, descriptor: CallableDescriptor, receiver: JsExpression?, receiverKind: ExplicitReceiverKind): MyCallBuilder {
@@ -81,10 +80,6 @@ class MyCallBuilder(context: TranslationContext,
         }
     }
 
-    fun callType(callType: CallType): MyCallBuilder {
-        this.callType = callType
-        return this
-    }
     fun args(vararg args: JsExpression): MyCallBuilder {
         assert(arguments == Collections.EMPTY_LIST)
         arguments = args.toList()
@@ -98,7 +93,7 @@ class MyCallBuilder(context: TranslationContext,
     }
 
     private fun inf(): CallInfo {
-        return CallInfo.build(context(), resolvedCall, receiver, arguments, callType)
+        return CallInfo.build(context(), resolvedCall, receiver, arguments)
     }
 
     fun propertyIntrinsic(isGet:Boolean): JsExpression? {
@@ -122,11 +117,13 @@ class MyCallBuilder(context: TranslationContext,
             propertyDescriptor.getSetter()!!
         }
 
+        val callType = if (resolvedCall.isSafeCall()) CallType.SAFE else CallType.NORMAL
         val translator = CallTranslator(receiver, null, arguments, resolvedCall, accessorDescriptor, callType, context())
         return translator.intrinsicInvocation()
     }
 
     fun intrinsic(): JsExpression? {
+        val callType = if (resolvedCall.isSafeCall()) CallType.SAFE else CallType.NORMAL
         val translator = CallTranslator(receiver, null, arguments, resolvedCall, resolvedCall.getResultingDescriptor().getOriginal(),
                                         callType, context())
         return translator.intrinsicInvocation()
@@ -219,8 +216,7 @@ class CallInfo private(val context: TranslationContext,
         fun build(context: TranslationContext,
                   resolvedCall: ResolvedCall<out CallableDescriptor>,
                   originQualifier: JsExpression?,
-                  originArguments: List<JsExpression>,
-                  callType: CallType = CallType.NORMAL): CallInfo {
+                  originArguments: List<JsExpression>): CallInfo {
 
             val isVariableAsFunctionCall = resolvedCall is VariableAsFunctionResolvedCall
             val isExtension = resolvedCall.getReceiverArgument() != ReceiverValue.NO_RECEIVER
@@ -273,6 +269,8 @@ class CallInfo private(val context: TranslationContext,
             } else {
                 originArguments
             }
+
+            val callType = if (resolvedCall.isSafeCall()) CallType.SAFE else CallType.NORMAL
 
             return CallInfo(context, resolvedCall, originQualifier, originArguments, callType, isVariableAsFunctionCall, isExtension,
                             callableDescriptor, arguments, qualifier, functionName, receiver, thisObject)

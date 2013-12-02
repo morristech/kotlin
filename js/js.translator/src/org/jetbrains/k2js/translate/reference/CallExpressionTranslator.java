@@ -66,11 +66,9 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
         if (resolvedCall instanceof VariableAsFunctionResolvedCall) {
             VariableAsFunctionResolvedCall call = (VariableAsFunctionResolvedCall) resolvedCall;
             JsExpression variableExpression = new MyCallBuilder(context(), call.getVariableCall(), translatedReceiver)
-                            .callType(callType)
                             .translate(CallEvaluatorImpl.PROPERTY_GET);
 
             return new MyCallBuilder(context(), call.getFunctionCall(), variableExpression).args(argumentsInfo.getTranslateArguments())
-                    .callType(callType)
                     .translate(new CallExpressionEvaluator(argumentsInfo));
 
         }
