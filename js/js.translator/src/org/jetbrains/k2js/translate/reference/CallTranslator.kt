@@ -47,6 +47,7 @@ import org.jetbrains.jet.lang.descriptors.PropertyDescriptor
 import org.jetbrains.jet.lang.resolve.DescriptorFactory
 import org.jetbrains.jet.lang.descriptors.impl.PropertyDescriptorImpl
 import org.jetbrains.k2js.translate.utils.JsAstUtils
+import org.jetbrains.k2js.translate.utils.AnnotationsUtils
 
 
 private fun safeGetValue(descriptor : ReceiverParameterDescriptor?) : ReceiverValue {
@@ -205,6 +206,7 @@ class CallInfo private(val context: TranslationContext,
                val callType: CallType,
                val isVariableAsFunctionCall: Boolean,
                val isExtension: Boolean,
+               val isNative:Boolean,
                val callableDescriptor: CallableDescriptor,
                val arguments: List<JsExpression>,
                val qualifier: JsExpression?,
@@ -271,9 +273,15 @@ class CallInfo private(val context: TranslationContext,
             }
 
             val callType = if (resolvedCall.isSafeCall()) CallType.SAFE else CallType.NORMAL
+            val isNative = AnnotationsUtils.isNativeObject(callableDescriptor);
+
+            if (isNative && isExtension) {
+                return CallInfo(context, resolvedCall, originQualifier, originArguments, callType, isVariableAsFunctionCall, false,
+                                true, callableDescriptor, originArguments, receiver, functionName, receiver, null)
+            }
 
             return CallInfo(context, resolvedCall, originQualifier, originArguments, callType, isVariableAsFunctionCall, isExtension,
-                            callableDescriptor, arguments, qualifier, functionName, receiver, thisObject)
+                            isNative,  callableDescriptor, arguments, qualifier, functionName, receiver, thisObject)
         }
     }
 

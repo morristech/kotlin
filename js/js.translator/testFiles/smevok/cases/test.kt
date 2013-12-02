@@ -1,16 +1,23 @@
 package foo.bar
 
+class A(val text: String)
 
-val Collection<*>.indices : IntRange
-    get() = 0..3
+class B(val a : A)
 
-public inline fun <T> List<T>.forEachWithIndex(operation : (Int, T) -> Unit) {
-    for (index in indices) {
-        operation(index, get(index))
-    }
+fun B.invoke(): String {
+    return this.a.text
 }
 
+val A.b : B
+    get() {
+        return B(this)
+    }
+
+fun A.bb() = b
 
 fun box(): String {
-    return "OK"
+    val b = A("O").bb()
+    val o = b()
+    val k = A("K").b()
+    return o + k
 }

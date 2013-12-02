@@ -81,7 +81,7 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
     private void prepareToBuildCall() {
         argumentsInfo = CallArgumentTranslator.translate(resolvedCall, receiver, context());
         translatedReceiver = getReceiver();
-        translatedCallee = getCalleeExpression();
+        //translatedCallee = getCalleeExpression();
     }
 
     @NotNull

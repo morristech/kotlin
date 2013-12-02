@@ -1,9 +1,15 @@
 package foo
 
-enum class A {
-    OK
+
+class A(val text: String)
+
+fun test(f: A.() -> String): String {
+    val a = A("O")
+    return a.f()
 }
 
 fun box(): String {
-    return A.OK.name()
+    return test {
+        text + "K"
+    }
 }
