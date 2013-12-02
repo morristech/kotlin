@@ -16,6 +16,8 @@
 
 package org.jetbrains.jet.j2k.ast
 
+import java.util.ArrayList
+
 public fun List<Node>.toKotlin(separator: String, prefix: String = "", suffix: String = ""): String {
     val result = StringBuilder()
     if (size() > 0) {
@@ -44,11 +46,12 @@ public fun String.withSuffix(suffix: String): String = if (isEmpty()) "" else th
 public fun String.withPrefix(prefix: String): String = if (isEmpty()) "" else prefix + this
 public fun Expression.withPrefix(prefix: String): String = if (isEmpty()) "" else prefix + toKotlin()
 
-public open class WhiteSpaceSeparatedElementList(val nodes: List<Node>, val minimalWhiteSpace: WhiteSpace) {
+public open class WhiteSpaceSeparatedElementList(val elements: List<Element>, val minimalWhiteSpace: WhiteSpace) {
     fun toKotlin(): String {
         val result = StringBuilder()
-        if (nodes.isNotEmpty()) {
-            for ((current, next) in nodes.subsequentPairs()) {
+        if (elements.isNotEmpty()) {
+            val effectiveElements = elements.filterNot { it.isEmpty() }.surroundWithWhiteSpaces().mergeWhiteSpaces()
+            for ((current, next) in effectiveElements.adjacentPairs()) {
                 if (current is WhiteSpace && current < minimalWhiteSpace) {
                     result.append(minimalWhiteSpace.toKotlin())
                 } else {
@@ -61,14 +64,53 @@ public open class WhiteSpaceSeparatedElementList(val nodes: List<Node>, val mini
         }
         return result.toString()
     }
+
+    private fun List<Element>.surroundWithWhiteSpaces(): List<Element> {
+        val result = ArrayList<Element>()
+        result.add(minimalWhiteSpace)
+        result.addAll(this)
+        result.add(minimalWhiteSpace)
+        return result
+    }
+
+    private fun List<Element>.mergeWhiteSpaces(): List<Element> {
+        var result = this
+        while (result.mergeAdjacentWhiteSpacePairs().size() < result.size()) {
+            result = result.mergeAdjacentWhiteSpacePairs()
+        }
+        return result
+    }
+
+    private fun List<Element>.mergeAdjacentWhiteSpacePairs(): List<Element> {
+        val result = ArrayList<Element>()
+        var skipNext = false
+        for ((current, next) in adjacentPairs()) {
+            if (skipNext) {
+                skipNext = false
+                continue
+            }
+            if (current is WhiteSpace && next is WhiteSpace) {
+                if (current > next) {
+                    result.add(current)
+                    skipNext = true
+                }
+                else {
+                    // skip current
+                }
+            } else {
+                result.add(current)
+            }
+        }
+        return result
+    }
 }
 
-public class StatementList(nodes: List<Element>) : WhiteSpaceSeparatedElementList(nodes, WhiteSpace.NewLine) {
+public class StatementList(elements: List<Element>) : WhiteSpaceSeparatedElementList(elements, WhiteSpace.NewLine) {
     val statements: List<Statement>
-        get() = nodes.filter { it is Statement }.map { it as Statement }
+        get() = elements.filter { it is Statement }.map { it as Statement }
 }
 
-fun <T : Any> List<T>.subsequentPairs(): List<Pair<T, T?>> {
+fun <T : Any> List<T>.adjacentPairs(): List<Pair<T, T?>> {
     var i = 0
     return iterate {
         when (++i) {
