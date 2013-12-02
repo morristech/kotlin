@@ -108,10 +108,6 @@ public open class WhiteSpaceSeparatedElementList(val elements: List<Element>, va
     }
 }
 
-public class StatementList(elements: List<Element>) : WhiteSpaceSeparatedElementList(elements, WhiteSpace.NewLine) {
-    val statements: List<Statement>
-        get() = elements.filter { it is Statement }.map { it as Statement }
-}
 
 fun <T : Any> List<T>.adjacentPairs(): List<Pair<T, T?>> {
     var i = 0
