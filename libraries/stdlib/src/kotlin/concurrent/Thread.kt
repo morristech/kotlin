@@ -49,30 +49,29 @@ public fun thread(start: Boolean = true, daemon: Boolean = false, contextClassLo
 /**
  * Executes the given block on the [[Executor]]
  */
-public /*inline*/ fun Executor.execute(action: ()->Unit) {
-    execute(runnable(action))
+public inline fun Executor.execute(action: ()->Unit) {
+    execute(Runnable { action() })
 }
 
 /**
  * Allows you to use the executor as a function to
  * execute the given block on the [[Executor]].
  */
-public /*inline*/ fun Executor.invoke(action: ()->Unit) {
-    execute(runnable(action))
+public inline fun Executor.invoke(action: ()->Unit) {
+    execute(Runnable { action() })
 }
 
 /**
  * Executes the given block on the [[Executor]]
  */
-public /*inline*/ fun <T>ExecutorService.submit(action: ()->T):Future<T> {
-    val c:Callable<T> = callable(action)
-    return submit(c);
+public inline fun <T>ExecutorService.submit(action: ()->T):Future<T> {
+    return submit(Callable { action() });
 }
 
 /**
 * Allows you to use the executor as a function to
 * execute the given block on the [[Executor]].
 */
-public /*inline*/ fun <T>ExecutorService.invoke(action: ()->T):Future<T> {
-    return submit(action)
+public inline fun <T>ExecutorService.invoke(action: ()->T):Future<T> {
+    return submit(Callable { action() })
 }
