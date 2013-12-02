@@ -27,7 +27,7 @@ public class Enum(converter: Converter,
                   extendsTypes: List<Type>,
                   baseClassParams: List<Expression>,
                   implementsTypes: List<Type>,
-                  members: List<Node>) : Class(converter, name, docComments, modifiers, typeParameterList,
+                  members: List<Element>) : Class(converter, name, docComments, modifiers, typeParameterList,
                                                extendsTypes, baseClassParams, implementsTypes, members) {
 
     override fun primaryConstructorSignatureToKotlin(): String {
@@ -44,7 +44,7 @@ public class Enum(converter: Converter,
         primaryConstructorSignatureToKotlin() +
         typeParameterList.toKotlin() +
         implementTypesToKotlin() +
-        " {\n" + membersExceptConstructors().toKotlin("\n", "", "\n") +
+        " {\n" + classMembers.nonStaticMembers.toKotlin() +
         (if (primaryConstructorBody.isEmpty()) "" else primaryConstructorBody) +
         "}"
     }

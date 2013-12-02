@@ -30,32 +30,28 @@ public open class Class(val converter: Converter,
                         val extendsTypes: List<Type>,
                         val baseClassParams: List<Expression>,
                         val implementsTypes: List<Type>,
-                        val members: List<Node>) : Member(docComment, modifiers) {
+                        val members: List<Element>) : Member(docComment, modifiers) {
     open val TYPE: String
         get() = "class"
 
-    private fun getPrimaryConstructor(): Constructor? {
-        return members.find { it is Constructor && it.isPrimary } as Constructor?
-    }
+    val classMembers = parseClassMembers(members)
 
     open fun primaryConstructorSignatureToKotlin(): String {
-        val maybeConstructor: Constructor? = getPrimaryConstructor()
-        return if (maybeConstructor != null) maybeConstructor.primarySignatureToKotlin() else "()"
+        val constructor = classMembers.primaryConstructor
+        return if (constructor != null) constructor.primarySignatureToKotlin() else "()"
     }
 
     fun primaryConstructorBodyToKotlin(): String? {
-        val maybeConstructor = getPrimaryConstructor()
+        val maybeConstructor = classMembers.primaryConstructor
         if (maybeConstructor != null && !(maybeConstructor.block?.isEmpty() ?: true)) {
             return maybeConstructor.primaryBodyToKotlin() + "\n"
         }
-
         return ""
     }
 
-    fun membersExceptConstructors(): List<Node> = members.filterNot { it is Constructor }
-
     fun secondaryConstructorsAsStaticInitFunction(): List<Function> {
-        return members.filter { it is Constructor && !it.isPrimary }.map { constructorToInit(it as Function) }
+        throw IllegalStateException()
+        // return members.filter { it is Constructor && !it.isPrimary }.map { constructorToInit(it as Function) }
     }
 
     private fun constructorToInit(f: Function): Function {
@@ -110,13 +106,14 @@ public open class Class(val converter: Converter,
     open fun needsOpenModifier() = !isDefinitelyFinal() && converter.settings.openByDefault
 
     fun bodyToKotlin(): String {
-        return " {\n" + getNonStatic(membersExceptConstructors()).toKotlin("\n", "", "\n") + primaryConstructorBodyToKotlin() + classObjectToKotlin() + "}"
+        return " {" + classMembers.nonStaticMembers.toKotlin() + primaryConstructorBodyToKotlin() + classObjectToKotlin() + "}"
     }
 
     fun classObjectToKotlin(): String {
+        //TODO: make string
         val staticMembers = ArrayList<Node>()
-        staticMembers.addAll(secondaryConstructorsAsStaticInitFunction())
-        staticMembers.addAll(getStatic(membersExceptConstructors()))
+        //staticMembers.addAll(secondaryConstructorsAsStaticInitFunction())
+        //staticMembers.addAll(getStatic(membersExceptConstructors()))
         return staticMembers.toKotlin("\n", "class object {\n", "\n}")
     }
 
