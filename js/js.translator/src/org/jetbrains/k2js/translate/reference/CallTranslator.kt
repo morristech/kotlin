@@ -132,21 +132,21 @@ class MyCallBuilder(context: TranslationContext,
         return translator.intrinsicInvocation()
     }
     fun simple(): JsExpression {
-        return CallEvaluatorImpl.SIMPLE_CALL.compute(inf())!!
+        return CallEvaluatorImpl.SIMPLE_CALL.computeAndWrap(inf())!!
     }
 
     fun translate(): JsExpression {
-        return intrinsic() ?: CallEvaluatorImpl.SIMPLE_CALL.compute(inf())!!
+        return intrinsic() ?: CallEvaluatorImpl.SIMPLE_CALL.computeAndWrap(inf())!!
     }
 
     fun translate(consumer: CallEvaluator): JsExpression {
         if (consumer == CallEvaluatorImpl.PROPERTY_GET) {
-            return propertyIntrinsic(true) ?: consumer.compute(inf())!!
+            return propertyIntrinsic(true) ?: consumer.computeAndWrap(inf())!!
         }
         if (consumer == CallEvaluatorImpl.PROPERTY_SET) {
-            return propertyIntrinsic(false) ?: consumer.compute(inf())!!
+            return propertyIntrinsic(false) ?: consumer.computeAndWrap(inf())!!
         }
-        return intrinsic() ?: consumer.compute(inf())!!
+        return intrinsic() ?: consumer.computeAndWrap(inf())!!
     }
 
 
@@ -156,11 +156,15 @@ trait CallEvaluator {
     fun compute(inf: CallInfo): JsExpression?
 }
 
+fun CallEvaluator.computeAndWrap(inf: CallInfo): JsExpression? {
+    return inf.wrapUseCallType(compute(inf))
+}
+
 enum abstract class CallEvaluatorImpl : CallEvaluator {
 
     SIMPLE_CALL : CallEvaluatorImpl() {
         override fun compute(inf: CallInfo): JsExpression? {
-            return inf.wrapUseCallType(JsInvocation(inf.getFunctionRef(), inf.arguments))
+            return JsInvocation(inf.getFunctionRef(), inf.arguments)
         }
     }
 
@@ -168,14 +172,14 @@ enum abstract class CallEvaluatorImpl : CallEvaluator {
         override fun compute(inf: CallInfo): JsExpression? {
             if (inf.isExtension) {
                 val propertyGetName = Namer.getNameForAccessor(inf.functionName.getIdent()!!, true, false)
-                return inf.wrapUseCallType(JsInvocation(inf.getFunctionRef(propertyGetName), inf.arguments))
+                return JsInvocation(inf.getFunctionRef(propertyGetName), inf.arguments)
             }
             if (inf.isSuperInvocation()) {
                 val propertyName = inf.context.program().getStringLiteral(inf.functionName.getIdent())
                 val callSuperGet = JsInvocation(inf.context.namer().getCallGetProperty(), JsLiteral.THIS, inf.qualifier, propertyName)
-                return inf.wrapUseCallType(callSuperGet)
+                return callSuperGet
             }
-            return inf.wrapUseCallType(inf.getFunctionRef())
+            return inf.getFunctionRef()
         }
     }
 
@@ -183,15 +187,15 @@ enum abstract class CallEvaluatorImpl : CallEvaluator {
         override fun compute(inf: CallInfo): JsExpression? {
             if (inf.isExtension) {
                 val propertyGetName = Namer.getNameForAccessor(inf.functionName.getIdent()!!, false, false)
-                return inf.wrapUseCallType(JsInvocation(inf.getFunctionRef(propertyGetName), inf.arguments))
+                return JsInvocation(inf.getFunctionRef(propertyGetName), inf.arguments)
             }
             val value = inf.arguments.first!!
             if (inf.isSuperInvocation()) {
                 val propertyName = inf.context.program().getStringLiteral(inf.functionName.getIdent())
                 val callSuperGet = JsInvocation(inf.context.namer().getCallSetProperty(), JsLiteral.THIS, inf.qualifier, propertyName, value)
-                return inf.wrapUseCallType(callSuperGet)
+                return callSuperGet
             }
-            return inf.wrapUseCallType(JsAstUtils.assignment(inf.getFunctionRef(), value))
+            return JsAstUtils.assignment(inf.getFunctionRef(), value)
         }
     }
 }
@@ -288,10 +292,14 @@ class CallInfo private(val context: TranslationContext,
         return this.constructCall(originReceiver, callConstructor, context)
     }
 
-    fun wrapUseCallType(resultExpression: JsExpression): JsExpression {
-        if (originReceiver != null) {
+    fun wrapUseCallType(resultExpression: JsExpression?): JsExpression? {
+        if (resultExpression == null) {
+            return null
+        } 
+        else if (originReceiver != null) {
             return callType.construct { resultExpression }
-        } else {
+        } 
+        else {
             return resultExpression
         }
     }
