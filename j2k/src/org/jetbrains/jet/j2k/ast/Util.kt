@@ -44,14 +44,18 @@ public fun String.withSuffix(suffix: String): String = if (isEmpty()) "" else th
 public fun String.withPrefix(prefix: String): String = if (isEmpty()) "" else prefix + this
 public fun Expression.withPrefix(prefix: String): String = if (isEmpty()) "" else prefix + toKotlin()
 
-public open class WhiteSpaceSeparatedElementList(val nodes: List<Node>, val defaultWhiteSpace: WhiteSpace) {
+public open class WhiteSpaceSeparatedElementList(val nodes: List<Node>, val minimalWhiteSpace: WhiteSpace) {
     fun toKotlin(): String {
         val result = StringBuilder()
         if (nodes.isNotEmpty()) {
             for ((current, next) in nodes.subsequentPairs()) {
-                result.append(current.toKotlin())
+                if (current is WhiteSpace && current < minimalWhiteSpace) {
+                    result.append(minimalWhiteSpace.toKotlin())
+                } else {
+                    result.append(current.toKotlin())
+                }
                 if (next != null && current !is WhiteSpace && next !is WhiteSpace) {
-                    result.append(defaultWhiteSpace.toKotlin())
+                    result.append(minimalWhiteSpace.toKotlin())
                 }
             }
         }
@@ -59,7 +63,7 @@ public open class WhiteSpaceSeparatedElementList(val nodes: List<Node>, val defa
     }
 }
 
-public class StatementList(nodes: List<Element>) : WhiteSpaceSeparatedElementList(nodes, WhiteSpace("\n")) {
+public class StatementList(nodes: List<Element>) : WhiteSpaceSeparatedElementList(nodes, WhiteSpace.NewLine) {
     val statements: List<Statement>
         get() = nodes.filter { it is Statement }.map { it as Statement }
 }
