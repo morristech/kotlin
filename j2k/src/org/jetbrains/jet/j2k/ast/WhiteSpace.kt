@@ -17,8 +17,26 @@
 package org.jetbrains.jet.j2k.ast
 
 
-//TODO: standard whitespaces
-public class WhiteSpace(val text: String): Element {
+public class WhiteSpace(val text: String) : Element {
     override fun toKotlin() = text
     override fun isEmpty() = text.isEmpty()
+
+    public fun compareTo(other: WhiteSpace): Int {
+
+        fun WhiteSpace.newLinesCount() = this.text.count { it == '\n' }
+
+        if (newLinesCount() != other.newLinesCount()) {
+            return newLinesCount() - other.newLinesCount()
+        }
+
+        fun WhiteSpace.spacesCount() = this.text.count { it == ' ' }
+
+        return spacesCount() - other.spacesCount()
+    }
+
+    class object {
+        public val NewLine: WhiteSpace = WhiteSpace("\n")
+    }
 }
+
+
