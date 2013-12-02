@@ -43,3 +43,34 @@ public fun Collection<Modifier>.toKotlin(separator: String = " "): String {
 public fun String.withSuffix(suffix: String): String = if (isEmpty()) "" else this + suffix
 public fun String.withPrefix(prefix: String): String = if (isEmpty()) "" else prefix + this
 public fun Expression.withPrefix(prefix: String): String = if (isEmpty()) "" else prefix + toKotlin()
+
+public open class WhiteSpaceSeparatedElementList(val nodes: List<Node>, val defaultWhiteSpace: WhiteSpace) {
+    fun toKotlin(): String {
+        val result = StringBuilder()
+        if (nodes.isNotEmpty()) {
+            for ((current, next) in nodes.subsequentPairs()) {
+                result.append(current.toKotlin())
+                if (next != null && current !is WhiteSpace && next !is WhiteSpace) {
+                    result.append(defaultWhiteSpace.toKotlin())
+                }
+            }
+        }
+        return result.toString()
+    }
+}
+
+public class StatementList(nodes: List<Element>) : WhiteSpaceSeparatedElementList(nodes, WhiteSpace("\n")) {
+    val statements: List<Statement>
+        get() = nodes.filter { it is Statement }.map { it as Statement }
+}
+
+fun <T : Any> List<T>.subsequentPairs(): List<Pair<T, T?>> {
+    var i = 0
+    return iterate {
+        when (++i) {
+            size() + 1 -> null
+            size() -> Pair(get(i - 1), null)
+            else -> Pair(get(i - 1), get(i))
+        }
+    }.toList()
+}
