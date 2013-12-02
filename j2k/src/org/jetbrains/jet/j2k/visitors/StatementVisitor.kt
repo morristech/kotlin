@@ -17,7 +17,6 @@
 package org.jetbrains.jet.j2k.visitors
 
 import com.intellij.psi.*
-import com.intellij.psi.tree.IElementType
 import org.jetbrains.jet.j2k.Converter
 import org.jetbrains.jet.j2k.ast.*
 import org.jetbrains.jet.j2k.countWritingAccesses
@@ -112,7 +111,7 @@ public open class StatementVisitor(converter: Converter) : ElementVisitor(conver
             var forStatements = ArrayList<Statement>()
             forStatements.add(getConverter().convertStatement(initialization))
             val bodyAndUpdate = listOf(getConverter().convertStatement(body),
-                                        Block(listOf(getConverter().convertStatement(update))))
+                                       Block(listOf(getConverter().convertStatement(update))))
             forStatements.add(WhileStatement(
                     if (condition == null)
                         LiteralExpression("true")
@@ -292,5 +291,10 @@ public open class StatementVisitor(converter: Converter) : ElementVisitor(conver
 
             return cases
         }
+    }
+
+
+    override fun visitEmptyStatement(statement: PsiEmptyStatement?) {
+        myResult = Statement.EMPTY_STATEMENT
     }
 }
