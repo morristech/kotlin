@@ -31,7 +31,7 @@ public class Block(val statementList: StatementList, val notEmpty: Boolean = fal
     public val statements: List<Statement> = statementList.statements
 
     public override fun isEmpty(): Boolean {
-        return !notEmpty && statementList.statements.all { it.isEmpty() }
+        return !notEmpty && statements.all { it.isEmpty() }
     }
 
     public override fun toKotlin(): String {
