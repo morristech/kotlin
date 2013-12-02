@@ -20,9 +20,9 @@ import java.util.ArrayList
 
 public fun Block(statements: List<Statement>, notEmpty: Boolean = false): Block {
     val elements = ArrayList<Element>()
-    elements.add(WhiteSpace("\n"))
+    elements.add(WhiteSpace.NewLine)
     elements.addAll(statements)
-    elements.add(WhiteSpace("\n"))
+    elements.add(WhiteSpace.NewLine)
     return Block(StatementList(elements), notEmpty)
 }
 
