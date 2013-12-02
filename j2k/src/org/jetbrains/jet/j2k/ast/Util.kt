@@ -47,19 +47,22 @@ public fun String.withPrefix(prefix: String): String = if (isEmpty()) "" else pr
 public fun Expression.withPrefix(prefix: String): String = if (isEmpty()) "" else prefix + toKotlin()
 
 public open class WhiteSpaceSeparatedElementList(val elements: List<Element>, val minimalWhiteSpace: WhiteSpace) {
+    val nonEmptyElements = elements.filterNot { it.isEmpty() }
+
     fun toKotlin(): String {
+        if (nonEmptyElements.isEmpty()) {
+            return ""
+        }
         val result = StringBuilder()
-        if (elements.isNotEmpty()) {
-            val effectiveElements = elements.filterNot { it.isEmpty() }.surroundWithWhiteSpaces().mergeWhiteSpaces()
-            for ((current, next) in effectiveElements.adjacentPairs()) {
-                if (current is WhiteSpace && current < minimalWhiteSpace) {
-                    result.append(minimalWhiteSpace.toKotlin())
-                } else {
-                    result.append(current.toKotlin())
-                }
-                if (next != null && current !is WhiteSpace && next !is WhiteSpace) {
-                    result.append(minimalWhiteSpace.toKotlin())
-                }
+        val effectiveElements = nonEmptyElements.surroundWithWhiteSpaces().mergeWhiteSpaces()
+        for ((current, next) in effectiveElements.adjacentPairs()) {
+            if (current is WhiteSpace && current < minimalWhiteSpace) {
+                result.append(minimalWhiteSpace.toKotlin())
+            } else {
+                result.append(current.toKotlin())
+            }
+            if (next != null && current !is WhiteSpace && next !is WhiteSpace) {
+                result.append(minimalWhiteSpace.toKotlin())
             }
         }
         return result.toString()
