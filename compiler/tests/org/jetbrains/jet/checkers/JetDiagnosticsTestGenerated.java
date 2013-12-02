@@ -3858,6 +3858,7 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
             }
             
             @TestMetadata("compiler/testData/diagnostics/tests/inline/binaryExpressions")
+            @InnerTestClasses({BinaryExpressions.Param.class})
             public static class BinaryExpressions extends AbstractDiagnosticsTestWithEagerResolve {
                 public void testAllFilesPresentInBinaryExpressions() throws Exception {
                     JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("compiler/testData/diagnostics/tests/inline/binaryExpressions"), Pattern.compile("^(.+)\\.kt$"), true);
@@ -3903,6 +3904,50 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
                     doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/rangeTo.kt");
                 }
                 
+                @TestMetadata("compiler/testData/diagnostics/tests/inline/binaryExpressions/param")
+                public static class Param extends AbstractDiagnosticsTestWithEagerResolve {
+                    public void testAllFilesPresentInParam() throws Exception {
+                        JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("compiler/testData/diagnostics/tests/inline/binaryExpressions/param"), Pattern.compile("^(.+)\\.kt$"), true);
+                    }
+                    
+                    @TestMetadata("arrayAccess.kt")
+                    public void testArrayAccess() throws Exception {
+                        doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/param/arrayAccess.kt");
+                    }
+                    
+                    @TestMetadata("comparison.kt")
+                    public void testComparison() throws Exception {
+                        doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/param/comparison.kt");
+                    }
+                    
+                    @TestMetadata("component.kt")
+                    public void testComponent() throws Exception {
+                        doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/param/component.kt");
+                    }
+                    
+                    @TestMetadata("contains.kt")
+                    public void testContains() throws Exception {
+                        doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/param/contains.kt");
+                    }
+                    
+                    @TestMetadata("mathBinary.kt")
+                    public void testMathBinary() throws Exception {
+                        doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/param/mathBinary.kt");
+                    }
+                    
+                    @TestMetadata("rangeTo.kt")
+                    public void testRangeTo() throws Exception {
+                        doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/param/rangeTo.kt");
+                    }
+                    
+                }
+                
+                public static Test innerSuite() {
+                    TestSuite suite = new TestSuite("BinaryExpressions");
+                    suite.addTestSuite(BinaryExpressions.class);
+                    suite.addTestSuite(Param.class);
+                    return suite;
+                }
             }
             
             @TestMetadata("compiler/testData/diagnostics/tests/inline/nonPublicMember")
@@ -3969,7 +4014,7 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
             public static Test innerSuite() {
                 TestSuite suite = new TestSuite("Inline");
                 suite.addTestSuite(Inline.class);
-                suite.addTestSuite(BinaryExpressions.class);
+                suite.addTest(BinaryExpressions.innerSuite());
                 suite.addTestSuite(NonPublicMember.class);
                 suite.addTestSuite(UnaryExpressions.class);
                 return suite;
