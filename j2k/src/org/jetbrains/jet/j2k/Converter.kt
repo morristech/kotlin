@@ -87,8 +87,8 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         return AnonymousClass(this, getMembers(anonymousClass))
     }
 
-    private fun getMembers(psiClass: PsiClass): List<Node> {
-        val members = ArrayList<Node>()
+    private fun getMembers(psiClass: PsiClass): List<Element> {
+        val members = ArrayList<Element>()
         for (e in psiClass.getChildren()) {
             val converted = convertMember(e, psiClass)
             if (converted != null) members.add(converted)
@@ -101,7 +101,7 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         return if (psiDocComment != null) Comment(psiDocComment.getText()!!) else null
     }
 
-    private fun convertMember(e: PsiElement?, containingClass: PsiClass): Node? = when(e) {
+    private fun convertMember(e: PsiElement?, containingClass: PsiClass): Element? = when(e) {
         is PsiMethod -> convertMethod(e, true)
         is PsiField -> convertField(e, containingClass)
         is PsiClass -> convertClass(e)
