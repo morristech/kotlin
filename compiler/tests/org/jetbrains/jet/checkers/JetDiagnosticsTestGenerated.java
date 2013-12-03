@@ -3912,7 +3912,7 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
                 public void testContains() throws Exception {
                     doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/contains.kt");
                 }
-
+                
                 @TestMetadata("mathOperations.kt")
                 public void testMathOperations() throws Exception {
                     doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/mathOperations.kt");
