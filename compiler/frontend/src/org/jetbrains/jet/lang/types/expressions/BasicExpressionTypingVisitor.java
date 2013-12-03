@@ -869,7 +869,7 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
             JetExpression left,
             JetExpression right
     ) {
-        JetTypeInfo result;DataFlowInfo dataFlowInfo = context.dataFlowInfo;
+        DataFlowInfo dataFlowInfo = context.dataFlowInfo;
         if (right != null && left != null) {
             ExpressionReceiver receiver = ExpressionTypingUtils.safeGetExpressionReceiver(facade, left, context);
 
@@ -878,15 +878,14 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
             dataFlowInfo = leftTypeInfo.getDataFlowInfo();
             ExpressionTypingContext contextWithDataFlow = context.replaceDataFlowInfo(dataFlowInfo);
 
-            OverloadResolutionResults<FunctionDescriptor> resolutionResults = resolveFakeCall(
-                    contextWithDataFlow, receiver, OperatorConventions.EQUALS, KotlinBuiltIns.getInstance().getNullableAnyType());
+            OverloadResolutionResults<FunctionDescriptor> resolutionResults = resolveCallWithFakeArguments(
+                    contextWithDataFlow.replaceExpectedType(NO_EXPECTED_TYPE), receiver, operationSign,
+                    OperatorConventions.EQUALS, KotlinBuiltIns.getInstance().getNullableAnyType());
 
             dataFlowInfo = facade.getTypeInfo(right, contextWithDataFlow).getDataFlowInfo();
 
             if (resolutionResults.isSuccess()) {
                 FunctionDescriptor equals = resolutionResults.getResultingCall().getResultingDescriptor();
-                context.trace.record(REFERENCE_TARGET, operationSign, equals);
-                context.trace.record(RESOLVED_CALL, operationSign, resolutionResults.getResultingCall());
                 if (ensureBooleanResult(operationSign, OperatorConventions.EQUALS, equals.getReturnType(), context)) {
                     ensureNonemptyIntersectionOfOperandTypes(expression, context);
                 }
@@ -900,8 +899,7 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
                 }
             }
         }
-        result = JetTypeInfo.create(KotlinBuiltIns.getInstance().getBooleanType(), dataFlowInfo);
-        return result;
+        return JetTypeInfo.create(KotlinBuiltIns.getInstance().getBooleanType(), dataFlowInfo);
     }
 
     @NotNull

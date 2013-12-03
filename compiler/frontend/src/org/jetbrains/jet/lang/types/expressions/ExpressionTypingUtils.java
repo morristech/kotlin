@@ -328,20 +328,59 @@ public class ExpressionTypingUtils {
     }
 
     @NotNull
+    public static OverloadResolutionResults<FunctionDescriptor> resolveCallWithFakeArguments(
+            @NotNull ExpressionTypingContext context,
+            @NotNull ReceiverValue receiver,
+            @NotNull JetReferenceExpression functionReference,
+            @NotNull Name name,
+            @NotNull JetType... argumentTypes
+    ) {
+        TemporaryBindingTrace traceWithFakeArgumentInfo = TemporaryBindingTrace.create(
+                context.trace, "trace to resolve call with fake arguments for", name);
+        final List<JetExpression> fakeArguments = createFakeArgumentsOfTypes(argumentTypes, traceWithFakeArgumentInfo, context);
+
+        Call call = CallMaker.makeCallWithExpressions(functionReference, receiver, null, functionReference, fakeArguments);
+        OverloadResolutionResults<FunctionDescriptor> results =
+                context.replaceBindingTrace(traceWithFakeArgumentInfo).resolveCallWithGivenName(call, functionReference, name);
+
+        if (results.isSuccess()) {
+            traceWithFakeArgumentInfo.commit(new TraceEntryFilter() {
+                @Override
+                public boolean accept(@NotNull WritableSlice<?, ?> slice, Object key) {
+                    // excluding all entries related to fake arguments
+                    //noinspection SuspiciousMethodCalls
+                    return !fakeArguments.contains(key);
+                }
+            }, false);
+        }
+        return results;
+    }
+
+    @NotNull
     public static OverloadResolutionResults<FunctionDescriptor> resolveFakeCall(
             @NotNull ExpressionTypingContext context,
             @NotNull ReceiverValue receiver,
             @NotNull Name name,
             @NotNull JetType... argumentTypes
     ) {
-        TemporaryBindingTrace traceWithFakeArgumentInfo = TemporaryBindingTrace.create(context.trace, "trace to store fake argument for",
-                                                                                       name);
+        TemporaryBindingTrace traceWithFakeArgumentInfo = TemporaryBindingTrace.create(
+                context.trace, "trace to store fake argument for", name);
+        List<JetExpression> fakeArguments = createFakeArgumentsOfTypes(argumentTypes, traceWithFakeArgumentInfo, context);
+        return makeAndResolveFakeCall(receiver, context.replaceBindingTrace(traceWithFakeArgumentInfo), fakeArguments, name).getSecond();
+    }
+
+    @NotNull
+    private static List<JetExpression> createFakeArgumentsOfTypes(
+            @NotNull JetType[] argumentTypes,
+            @NotNull TemporaryBindingTrace traceWithFakeArgumentInfo,
+            @NotNull ExpressionTypingContext context
+    ) {
         List<JetExpression> fakeArguments = Lists.newArrayList();
         for (JetType type : argumentTypes) {
             fakeArguments.add(createFakeExpressionOfType(context.expressionTypingServices.getProject(), traceWithFakeArgumentInfo,
                                                          "fakeArgument" + fakeArguments.size(), type));
         }
-        return makeAndResolveFakeCall(receiver, context.replaceBindingTrace(traceWithFakeArgumentInfo), fakeArguments, name).getSecond();
+        return fakeArguments;
     }
 
     public static JetExpression createFakeExpressionOfType(
