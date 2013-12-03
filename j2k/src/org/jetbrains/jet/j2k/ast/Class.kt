@@ -44,14 +44,13 @@ public open class Class(val converter: Converter,
     fun primaryConstructorBodyToKotlin(): String? {
         val maybeConstructor = classMembers.primaryConstructor
         if (maybeConstructor != null && !(maybeConstructor.block?.isEmpty() ?: true)) {
-            return maybeConstructor.primaryBodyToKotlin() + "\n"
+            return "\n" + maybeConstructor.primaryBodyToKotlin() + "\n"
         }
         return ""
     }
 
-    fun secondaryConstructorsAsStaticInitFunction(): List<Function> {
-        throw IllegalStateException()
-        // return members.filter { it is Constructor && !it.isPrimary }.map { constructorToInit(it as Function) }
+    fun secondaryConstructorsAsStaticInitFunction(): MemberList {
+        return MemberList(classMembers.secondaryConstructors.elements.map { if (it is Constructor) constructorToInit(it) else it })
     }
 
     private fun constructorToInit(f: Function): Function {
@@ -110,11 +109,12 @@ public open class Class(val converter: Converter,
     }
 
     fun classObjectToKotlin(): String {
-        //TODO: make string
-        val staticMembers = ArrayList<Node>()
-        //staticMembers.addAll(secondaryConstructorsAsStaticInitFunction())
-        //staticMembers.addAll(getStatic(membersExceptConstructors()))
-        return staticMembers.toKotlin("\n", "class object {\n", "\n}")
+        val secondaryConstructorsAsStaticInitFunction = secondaryConstructorsAsStaticInitFunction()
+        val staticMembers = classMembers.staticMembers
+        if (secondaryConstructorsAsStaticInitFunction.isEmpty() && staticMembers.isEmpty()) {
+            return ""
+        }
+        return "\nclass object {${secondaryConstructorsAsStaticInitFunction.toKotlin()}${staticMembers.toKotlin()}}"
     }
 
     override fun toKotlin(): String =

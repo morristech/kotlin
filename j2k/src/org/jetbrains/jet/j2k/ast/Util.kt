@@ -49,6 +49,8 @@ public fun Expression.withPrefix(prefix: String): String = if (isEmpty()) "" els
 public open class WhiteSpaceSeparatedElementList(val elements: List<Element>, val minimalWhiteSpace: WhiteSpace) {
     val nonEmptyElements = elements.filterNot { it.isEmpty() }
 
+    fun isEmpty() = nonEmptyElements.all { it is WhiteSpace }
+
     fun toKotlin(): String {
         if (nonEmptyElements.isEmpty()) {
             return ""

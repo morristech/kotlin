@@ -70,7 +70,9 @@ private fun splitInGroups(elements: List<Element>): List<MemberHolder> {
             current = ArrayList<Element>()
         }
     }
-    result.last!!.second.addAll(current)
+    if (result.isNotEmpty()) {
+        result.last!!.second.addAll(current)
+    }
     return result. map { MemberHolder(it.first, it.second) }
 }
 
