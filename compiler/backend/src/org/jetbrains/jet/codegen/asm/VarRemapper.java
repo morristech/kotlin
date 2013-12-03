@@ -16,8 +16,6 @@
 
 package org.jetbrains.jet.codegen.asm;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 public abstract class VarRemapper {
@@ -39,10 +37,10 @@ public abstract class VarRemapper {
     public static class ClosureRemapper extends ShiftRemapper {
 
         private final ClosureInfo info;
-        private final List<InlineCodegen.ParameterInfo> originalParams;
+        private final List<ParameterInfo> originalParams;
         private final int capturedSize;
 
-        public ClosureRemapper(ClosureInfo info, int valueParametersShift, List<InlineCodegen.ParameterInfo> originalParams) {
+        public ClosureRemapper(ClosureInfo info, int valueParametersShift, List<ParameterInfo> originalParams) {
             super(valueParametersShift);
             this.info = info;
             this.originalParams = originalParams;
@@ -58,51 +56,15 @@ public abstract class VarRemapper {
         }
     }
 
-    public static class DeltaRemapper extends VarRemapper {
-
-        private final int paramShift;
-        private final int paramSize;
-        private final int additionalParamsSize;
-        private final Collection<Integer> closureIndexes;
-
-        public DeltaRemapper(int paramShift, int paramSize, int additionalParamsSize, Collection<Integer> closureIndexes) {
-            this.paramShift = paramShift;
-            this.paramSize = paramSize;
-            this.additionalParamsSize = additionalParamsSize;
-            this.closureIndexes = closureIndexes;
-        }
-
-        @Override
-        public int doRemap(int index) {
-            int closureDelta = calcClosureDelta(index);
-            if (index < paramSize) {
-                return paramShift + index - closureDelta;
-            } else {
-                return paramShift + index + additionalParamsSize - closureDelta;
-            }
-        }
-
-        private int calcClosureDelta(int index) {
-            int delta = 0;
-            for (Iterator<Integer> iterator = closureIndexes.iterator(); iterator.hasNext(); ) {
-                Integer next = iterator.next();
-                if (index > next.intValue()) {
-                    delta++;
-                }
-            }
-            return delta;
-        }
-    }
-
     public static class ParamRemapper extends VarRemapper {
 
         private final int paramShift;
         private final int paramSize;
         private final int additionalParamsSize;
-        private final List<InlineCodegen.ParameterInfo> params;
+        private final List<ParameterInfo> params;
         private final int actualParams;
 
-        public ParamRemapper(int paramShift, int paramSize, int additionalParamsSize, List<InlineCodegen.ParameterInfo> params) {
+        public ParamRemapper(int paramShift, int paramSize, int additionalParamsSize, List<ParameterInfo> params) {
             this.paramShift = paramShift;
             this.paramSize = paramSize;
             this.additionalParamsSize = additionalParamsSize;
@@ -110,7 +72,7 @@ public abstract class VarRemapper {
 
             int paramCount = 0;
             for (int i = 0; i < params.size(); i++) {
-                InlineCodegen.ParameterInfo info = params.get(i);
+                ParameterInfo info = params.get(i);
                 if (!info.isSkippedOrRemapped()) {
                     paramCount += info.getType().getSize();
                 }
@@ -121,7 +83,7 @@ public abstract class VarRemapper {
         @Override
         public int doRemap(int index) {
             if (index < paramSize) {
-                InlineCodegen.ParameterInfo info = params.get(index);
+                ParameterInfo info = params.get(index);
                 if (info.isSkipped) {
                     throw new RuntimeException("Trying to access skipped parameter: " + info.type + " at " +index);
                 }

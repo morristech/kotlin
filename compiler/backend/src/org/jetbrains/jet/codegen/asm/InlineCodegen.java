@@ -17,8 +17,6 @@
 package org.jetbrains.jet.codegen.asm;
 
 import com.google.common.collect.Lists;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +26,7 @@ import org.jetbrains.asm4.commons.InstructionAdapter;
 import org.jetbrains.asm4.commons.Method;
 import org.jetbrains.asm4.tree.*;
 import org.jetbrains.asm4.tree.analysis.*;
+import org.jetbrains.asm4.tree.analysis.Frame;
 import org.jetbrains.asm4.util.Textifier;
 import org.jetbrains.asm4.util.TraceMethodVisitor;
 import org.jetbrains.jet.codegen.*;
@@ -40,33 +39,24 @@ import org.jetbrains.jet.codegen.signature.JvmMethodParameterSignature;
 import org.jetbrains.jet.codegen.signature.JvmMethodSignature;
 import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.codegen.state.JetTypeMapper;
-import org.jetbrains.jet.descriptors.serialization.JavaProtoBuf;
-import org.jetbrains.jet.descriptors.serialization.ProtoBuf;
 import org.jetbrains.jet.descriptors.serialization.descriptors.DeserializedSimpleFunctionDescriptor;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingContextUtils;
-import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
-import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
-import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
-import org.jetbrains.jet.lang.resolve.name.FqName;
-import org.jetbrains.jet.lang.resolve.name.Name;
+import org.jetbrains.jet.renderer.DescriptorRenderer;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
-import static org.jetbrains.jet.codegen.AsmUtil.*;
-import static org.jetbrains.jet.lang.resolve.DescriptorUtils.getFQName;
+import static org.jetbrains.jet.codegen.AsmUtil.getMethodAsmFlags;
 
 public class InlineCodegen implements ParentCodegenAware, Inliner {
 
-    private final static int API = Opcodes.ASM4;
-
-    public static final String INLINE_RUNTIME = "jet/InlineRuntime";
-
-    public static final String INVOKE = "invoke";
+    public final static String INVOKE = "invoke";
 
     private final ExpressionCodegen codegen;
 
@@ -98,27 +88,6 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
 
     private final Call call;
 
-    @Nullable
-    public static MethodNode getMethodNode(
-            InputStream classData,
-            final String methodName,
-            final String methodDescriptor
-    ) throws ClassNotFoundException, IOException {
-        ClassReader cr = new ClassReader(classData);
-        final MethodNode[] methodNode = new MethodNode[1];
-        cr.accept(new ClassVisitor(API) {
-
-            @Override
-            public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-                if (methodName.equals(name) && methodDescriptor.equals(desc)) {
-                    return methodNode[0] = new MethodNode(access, name, desc, signature, exceptions);
-                }
-                return null;
-            }
-        }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-
-        return methodNode[0];
-    }
 
     public InlineCodegen(
             @NotNull ExpressionCodegen codegen,
@@ -146,70 +115,11 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
 
     @Override
     public void inlineCall(CallableMethod callableMethod, ClassVisitor visitor) {
-        PsiElement element = BindingContextUtils.descriptorToDeclaration(bindingContext, functionDescriptor);
-        VirtualFile file = null;
-        if (element == null) {
-            boolean isDeserialized = functionDescriptor instanceof DeserializedSimpleFunctionDescriptor;
-            DeclarationDescriptor parentDeclatation = functionDescriptor.getContainingDeclaration();
-            if (isDeserialized && parentDeclatation instanceof NamespaceDescriptor) {
-                DeserializedSimpleFunctionDescriptor deserializedDescriptor = (DeserializedSimpleFunctionDescriptor) functionDescriptor;
-                ProtoBuf.Callable proto = deserializedDescriptor.getFunctionProto();
-                if (proto.hasExtension(JavaProtoBuf.implClassName)) {
-                    Name name = deserializedDescriptor.getNameResolver().getName(proto.getExtension(JavaProtoBuf.implClassName));
-                    FqName namespaceFqName =
-                            PackageClassUtils.getPackageClassFqName(((NamespaceDescriptor) parentDeclatation).getFqName()).parent().child(
-                                    name);
-                    file = findVirtualFile(state.getProject(), namespaceFqName);
-                } else {
-                    assert false : "Function in namespace should have implClassName property in proto: " + functionDescriptor;
-                }
-            }
-
-            if (file == null) {
-                file = findVirtualFileContainingDescriptor(state.getProject(), functionDescriptor);
-            }
-        } else {
-            file = element.getContainingFile().getVirtualFile();
-        }
-
-        assert file != null : "Coudn't find declaration for " + functionDescriptor.getName();
-
-        boolean isSources = !file.getExtension().equalsIgnoreCase("class");
-
         MethodNode node = null;
 
         try {
-            if (isSources) {
-                JvmMethodSignature jvmSignature = typeMapper.mapSignature(functionDescriptor, true, context.getContextKind());
-                Method asmMethod = jvmSignature.getAsmMethod();
-                node = new MethodNode(Opcodes.ASM4,
-                                               getMethodAsmFlags(functionDescriptor, context.getContextKind()),
-                                               asmMethod.getName(),
-                                               asmMethod.getDescriptor(),
-                                               jvmSignature.getGenericsSignature(),
-                                               null);
-
-                FunctionCodegen functionCodegen = new FunctionCodegen(context, null, state, getParentCodegen());
-                functionCodegen.generateMethodBody(node, functionDescriptor, context.getParentContext().intoFunction(functionDescriptor),
-                                                   jvmSignature,
-                                                   new FunctionGenerationStrategy.FunctionDefault(state,
-                                                                                                  functionDescriptor,
-                                                                                                  (JetDeclarationWithBody) element));
-                node.visitMaxs(20, 20);
-                node.visitEnd();
-            }
-            else {
-                node = getMethodNode(file.getInputStream(), functionDescriptor.getName().asString(),
-                                     callableMethod.getSignature().getAsmMethod().getDescriptor());
-            }
-
+            node = createMethodNode(callableMethod);
             inlineCall(node, true);
-        }
-        catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
         }
         catch (CompilationException e) {
             throw e;
@@ -224,11 +134,53 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         }
     }
 
+    @NotNull
+    private MethodNode createMethodNode(CallableMethod callableMethod)
+            throws ClassNotFoundException, IOException {
+        MethodNode node = null;
+        if (functionDescriptor instanceof DeserializedSimpleFunctionDescriptor) {
+            VirtualFile file = InlineCodegenUtil.getVirtualFileForCallable((DeserializedSimpleFunctionDescriptor) functionDescriptor, state);
+            node = InlineCodegenUtil.getMethodNode(file.getInputStream(), functionDescriptor.getName().asString(),
+                                 callableMethod.getSignature().getAsmMethod().getDescriptor());
+
+            if (node == null) {
+                throw new RuntimeException("Couldn't obtain compiled function body for " + descriptorName(functionDescriptor));
+            }
+        }
+        else {
+            PsiElement element = BindingContextUtils.descriptorToDeclaration(bindingContext, functionDescriptor);
+
+            if (element == null) {
+                throw new RuntimeException("Couldn't find declaration for function " + descriptorName(functionDescriptor));
+            }
+
+            JvmMethodSignature jvmSignature = typeMapper.mapSignature(functionDescriptor, true, context.getContextKind());
+            Method asmMethod = jvmSignature.getAsmMethod();
+            node = new MethodNode(Opcodes.ASM4,
+                                           getMethodAsmFlags(functionDescriptor, context.getContextKind()),
+                                           asmMethod.getName(),
+                                           asmMethod.getDescriptor(),
+                                           jvmSignature.getGenericsSignature(),
+                                           null);
+
+            FunctionCodegen functionCodegen = new FunctionCodegen(context, null, state, getParentCodegen());
+            functionCodegen.generateMethodBody(node, functionDescriptor, context.getParentContext().intoFunction(functionDescriptor),
+                                               jvmSignature,
+                                               new FunctionGenerationStrategy.FunctionDefault(state,
+                                                                                              functionDescriptor,
+                                                                                              (JetDeclarationWithBody) element));
+            //TODO
+            node.visitMaxs(20, 20);
+            node.visitEnd();
+        }
+        return node;
+    }
+
     private void inlineCall(MethodNode node, boolean inlineClosures) {
         if (inlineClosures) {
             removeClosureAssertions(node);
             try {
-                prepareInlinedMethod2(node);
+                markPlacesForInlineAndRemoveInlinable(node);
             }
             catch (AnalyzerException e) {
                 throw new RuntimeException(e);
@@ -240,33 +192,9 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         generateClosuresBodies();
         putClosureParametersOnStack();
         int additionalParams = codegen.getFrameMap().getCurrentSize() - originalSize;
-        //VarRemapper remapper = new VarRemapper.DeltaRemapper(initialFrameSize, valueParamSize, additionalParams, getClosureIndexes());
         VarRemapper remapper = new VarRemapper.ParamRemapper(initialFrameSize, valueParamSize, additionalParams, tempTypes);
 
         doInline(node.access, node.desc, codegen.getMethodVisitor(), node, remapper.doRemap(valueParamSize + additionalParams), inlineClosures, remapper);
-    }
-
-    private void prepareInlinedMethod(MethodNode node) {
-        AbstractInsnNode cur = node.instructions.getFirst();
-        while (cur != null && cur.getNext() != null) {
-            AbstractInsnNode next = cur.getNext();
-            if (next.getType() == AbstractInsnNode.METHOD_INSN) {
-                MethodInsnNode methodInsnNode = (MethodInsnNode) next;
-                //TODO check closure
-                if (methodInsnNode.name.equals(INVOKE) && methodInsnNode.owner.equals(INLINE_RUNTIME)) {
-                    assert cur.getType() == AbstractInsnNode.VAR_INSN && cur.getOpcode() == Opcodes.ALOAD;
-                    int varIndex = ((VarInsnNode) cur).var;
-                    ClosureInfo closureInfo = expressionMap.get(varIndex);
-                    if (closureInfo != null) { //TODO: maybe add separate map for noninlinable closures
-                        closures.add(new ClosureUsage(varIndex, true));
-                        node.instructions.remove(cur);
-                    } else {
-                        closures.add(new ClosureUsage(varIndex, false));
-                    }
-                }
-            }
-            cur = next;
-        }
     }
 
     private void removeClosureAssertions(MethodNode node) {
@@ -293,8 +221,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         }
     }
 
-    private void prepareInlinedMethod2(MethodNode node) throws AnalyzerException {
-
+    private void markPlacesForInlineAndRemoveInlinable(@NotNull MethodNode node) throws AnalyzerException {
         Analyzer<SourceValue> analyzer = new Analyzer<SourceValue>(new SourceInterpreter());
         Frame<SourceValue>[] sources = analyzer.analyze("fake", node);
 
@@ -304,7 +231,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
             if (cur.getType() == AbstractInsnNode.METHOD_INSN) {
                 MethodInsnNode methodInsnNode = (MethodInsnNode) cur;
                 //TODO check closure
-                if (methodInsnNode.name.equals(INVOKE) /*&& methodInsnNode.owner.equals(INLINE_RUNTIME)*/) {
+                if (isInvokeOnInlinable(methodInsnNode.owner, methodInsnNode.name) /*&& methodInsnNode.owner.equals(INLINE_RUNTIME)*/) {
                     Frame<SourceValue> frame = sources[index];
                     SourceValue sourceValue = frame.getStack(frame.getStackSize() - Type.getArgumentTypes(methodInsnNode.desc).length - 1);
                     assert sourceValue.insns.size() == 1;
@@ -331,21 +258,21 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
             String desc,
             MethodVisitor mv,
             MethodNode methodNode,
-            final int frameSize,
+            int frameSize,
             final boolean inlineClosures,
-            VarRemapper remapper
+            @NotNull VarRemapper remapper
     ) {
 
         Label end = new Label();
 
         final LinkedList<ClosureUsage> infos = new LinkedList<ClosureUsage>(closures);
         methodNode.instructions.resetLabels();
-        final MethodVisitor methodVisitor = codegen.getMethodVisitor();
+        MethodVisitor methodVisitor = codegen.getMethodVisitor();
 
         InliningAdapter inliner = new InliningAdapter(methodVisitor, Opcodes.ASM4, desc, end, frameSize, remapper) {
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                if (inlineClosures && /*INLINE_RUNTIME.equals(owner) &&*/ INVOKE.equals(name)) { //TODO add method
+                if (inlineClosures && /*INLINE_RUNTIME.equals(owner) &&*/ isInvokeOnInlinable(owner, name)) { //TODO add method
                     assert !infos.isEmpty();
                     ClosureUsage closureUsage = infos.remove();
                     ClosureInfo info = expressionMap.get(closureUsage.index);
@@ -385,10 +312,13 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         methodVisitor.visitLabel(end);
     }
 
+    private boolean isInvokeOnInlinable(String owner, String name) {
+        return INVOKE.equals(name) && /*TODO: check type*/owner.contains("Function");
+    }
+
 
     private void generateClosuresBodies() {
-        for (Iterator<ClosureInfo> iterator = expressionMap.values().iterator(); iterator.hasNext(); ) {
-            ClosureInfo info = iterator.next();
+        for (ClosureInfo info : expressionMap.values()) {
             info.setNode(generateClosureBody(info));
         }
     }
@@ -416,7 +346,8 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         return transformClosure(methodNode, info);
     }
 
-    private MethodNode transformClosure(@NotNull MethodNode node, @NotNull final ClosureInfo info) {
+    @NotNull
+    private static MethodNode transformClosure(@NotNull MethodNode node, @NotNull ClosureInfo info) {
         //remove all this and shift all variables to captured ones size
         final int localVarSHift = info.getCapturedVarsSize();
         MethodNode transformedNode = new MethodNode(node.access, node.name, node.desc, node.signature, null) {
@@ -445,11 +376,10 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
                     Collection<EnclosedValueDescriptor> vars = info.getCapturedVars();
                     int index = 0;//skip this
                     boolean found = false;
-                    for (Iterator<EnclosedValueDescriptor> iterator = vars.iterator(); iterator.hasNext(); ) {
-                        EnclosedValueDescriptor valueDescriptor = iterator.next();
+                    for (EnclosedValueDescriptor valueDescriptor : vars) {
                         Type type = valueDescriptor.getType();
                         if (valueDescriptor.getFieldName().equals(name)) {
-                            opcode = opcode == Opcodes.GETFIELD ?  type.getOpcode(Opcodes.ILOAD) : type.getOpcode(Opcodes.ISTORE);
+                            opcode = opcode == Opcodes.GETFIELD ? type.getOpcode(Opcodes.ILOAD) : type.getOpcode(Opcodes.ISTORE);
                             found = true;
                             break;
                         }
@@ -507,7 +437,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
     @Override
     public boolean shouldPutValue(Type type, StackValue stackValue, MethodContext context) {
         if (stackValue != null && context.isInlineFunction() && stackValue instanceof StackValue.Local) {
-            if (type.getClassName().contains("Function")) {
+            if (isInvokeOnInlinable(type.getClassName(), "invoke")) {
                 //TODO remap only inlinable closure => otherwise we could get a lot of problem
                 return false; //TODO check annotations
             }
@@ -550,8 +480,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
             recordParamInfo(info, false);
         }
 
-        for (int i = 0; i < types.size(); i++) {
-            JvmMethodParameterSignature param = types.get(i);
+        for (JvmMethodParameterSignature param : types) {
             if (param.getKind() == JvmMethodParameterKind.VALUE) {
                 break;
             }
@@ -586,16 +515,14 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         assert actualParams.length == directOrder.size() : "Number of expected and actual params should be equals!";
 
         int size = 0;
-        for (Iterator<Type> iterator = directOrder.iterator(); iterator.hasNext(); ) {
-            Type next = iterator.next();
+        for (Type next : directOrder) {
             size += next.getSize();
         }
 
         shift += size;
         int index = directOrder.size();
 
-        for (Iterator<Type> iterator = Lists.reverse(directOrder).iterator(); iterator.hasNext(); ) {
-            Type next = iterator.next();
+        for (Type next : Lists.reverse(directOrder)) {
             shift -= next.getSize();
             Type typeOnStack = actualParams[--index];
             if (!typeOnStack.equals(next)) {
@@ -620,9 +547,8 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
     }
 
     private void putClosureParametersOnStack() {
-        //SORT
-        for (Iterator<ClosureInfo> iterator = expressionMap.values().iterator(); iterator.hasNext(); ) {
-            ClosureInfo next = iterator.next();
+        //TODO: SORT
+        for (ClosureInfo next : expressionMap.values()) {
             if (next.closure != null) {
                 int size = tempTypes.size();
                 next.setParamOffset(size);
@@ -637,63 +563,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         return codegen.getParentCodegen();
     }
 
-    private static class ClosureUsage {
-
-        private final int index;
-
-        private final boolean inlinable;
-
-        private ClosureUsage(int index, boolean isInlinable) {
-            this.index = index;
-            inlinable = isInlinable;
-        }
-
-        public boolean isInlinable() {
-            return inlinable;
-        }
-    }
-
-    @Nullable
-    private static VirtualFile findVirtualFileContainingDescriptor(
-            @NotNull Project project,
-            @NotNull DeclarationDescriptor referencedDescriptor
-    ) {
-        FqName containerFqName = getContainerFqName(referencedDescriptor);
-        if (containerFqName == null) {
-            return null;
-        }
-        return findVirtualFile(project, containerFqName);
-    }
-
-    private static VirtualFile findVirtualFile(Project project, FqName containerFqName) {
-        VirtualFileFinder fileFinder = ServiceManager.getService(project, VirtualFileFinder.class);
-        VirtualFile virtualFile = fileFinder.find(containerFqName);
-        if (virtualFile == null) {
-            return null;
-        }
-        return virtualFile;
-    }
-
-    //TODO: navigate to inner classes
-    @Nullable
-    private static FqName getContainerFqName(@NotNull DeclarationDescriptor referencedDescriptor) {
-        ClassOrNamespaceDescriptor
-                containerDescriptor = DescriptorUtils.getParentOfType(referencedDescriptor, ClassOrNamespaceDescriptor.class, false);
-        if (containerDescriptor instanceof NamespaceDescriptor) {
-            return PackageClassUtils.getPackageClassFqName(getFQName(containerDescriptor).toSafe());
-        }
-        if (containerDescriptor instanceof ClassDescriptor) {
-            ClassKind classKind = ((ClassDescriptor) containerDescriptor).getKind();
-            if (classKind == ClassKind.CLASS_OBJECT || classKind == ClassKind.ENUM_ENTRY) {
-                return getContainerFqName(containerDescriptor.getContainingDeclaration());
-            }
-            return getFQName(containerDescriptor).toSafe();
-        }
-        return null;
-    }
-
-    public CodegenContext getContext(DeclarationDescriptor descriptor, GenerationState state) {
-
+    public static CodegenContext getContext(DeclarationDescriptor descriptor, GenerationState state) {
         if (descriptor instanceof NamespaceDescriptor) {
             return new NamespaceContext((NamespaceDescriptor) descriptor, null);
         }
@@ -706,86 +576,28 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         else if (descriptor instanceof FunctionDescriptor) {
             return parent.intoFunction((FunctionDescriptor) descriptor);
         }
-        System.out.println("Coudn't build context for " + descriptor);
-        throw new IllegalStateException("Coudn't build context for " + descriptor);
-    }
 
-    @NotNull
-    private static VarRemapper createRemapper(
-            @NotNull JetTypeMapper typeMapper,
-            @NotNull Frame<SourceValue> frame,
-            @NotNull FunctionDescriptor descriptor,
-            @NotNull MethodContext context,
-            boolean includeThis
-    ) {
-        int types = 0;
-        if (includeThis && !isStaticMethod(descriptor, context)) {
-            types++;
-        }
-
-        JvmMethodSignature signature = typeMapper.mapSignature(descriptor, true, context.getContextKind());
-        types += signature.getKotlinParameterTypes().size();
-
-        int stackSize = frame.getStackSize();
-        VarInsnNode [] varInsnNodes = new VarInsnNode[types];
-        for (int i = 0; i < types; i++) {
-            SourceValue sourceValue = frame.getStack(stackSize - types);
-            if (sourceValue.insns.size() == 1) {
-                AbstractInsnNode node = sourceValue.insns.iterator().next();
-                if (node.getType() == AbstractInsnNode.VAR_INSN) {
-                    varInsnNodes[types - i] = (VarInsnNode) node;
-                }
-            }
-        }
-        return null;
+        throw new IllegalStateException("Coudn't build context for " + descriptorName(descriptor));
     }
 
     private static boolean isStaticMethod(FunctionDescriptor functionDescriptor, MethodContext context) {
         return (getMethodAsmFlags(functionDescriptor, context.getContextKind()) & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
     }
 
-    static class ParameterInfo {
-
-        private final int index;
-
-        final Type type;
-
-        final boolean isSkipped;
-
-        final int remapIndex;
-
-        public static final ParameterInfo STUB = new ParameterInfo(AsmTypeConstants.OBJECT_TYPE, true, -1, -1);
-
-        ParameterInfo(Type type, boolean skipped, int remapIndex, int index) {
-            this.type = type;
-            this.isSkipped = skipped;
-            this.remapIndex = remapIndex;
-            this.index = index;
+    @NotNull
+    private static String getNodeText(@Nullable MethodNode node) {
+        if (node == null) {
+            return "Not generated";
         }
-
-        public boolean isSkippedOrRemapped() {
-            return isSkipped || remapIndex != -1;
-        }
-
-        public int getInlinedIndex() {
-            return remapIndex != -1 ? remapIndex : index;
-        }
-
-        public boolean isSkipped() {
-            return isSkipped;
-        }
-
-        public Type getType() {
-            return type;
-        }
-    }
-
-    private String getNodeText(MethodNode node) {
         Textifier p = new Textifier();
         node.accept(new TraceMethodVisitor(p));
         StringWriter sw = new StringWriter();
         p.print(new PrintWriter(sw));
         sw.flush();
         return node.name + ": \n " + sw.getBuffer().toString();
+    }
+
+    private static String descriptorName(DeclarationDescriptor descriptor) {
+        return DescriptorRenderer.SHORT_NAMES_IN_TYPES.render(descriptor);
     }
 }

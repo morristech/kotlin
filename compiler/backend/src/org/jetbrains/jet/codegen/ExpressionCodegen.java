@@ -3932,10 +3932,12 @@ The "returned" value of try expression with no finally is either the last expres
         return methodVisitor;
     }
 
+    @NotNull
     public FrameMap getFrameMap() {
         return myFrameMap;
     }
 
+    @NotNull
     public MethodContext getContext() {
         return context;
     }
