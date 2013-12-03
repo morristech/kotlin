@@ -52,7 +52,7 @@ public open class WhiteSpaceSeparatedElementList(val elements: List<Element>, va
     fun isEmpty() = nonEmptyElements.all { it is WhiteSpace }
 
     fun toKotlin(): String {
-        if (nonEmptyElements.isEmpty()) {
+        if (isEmpty()) {
             return ""
         }
         val result = StringBuilder()
