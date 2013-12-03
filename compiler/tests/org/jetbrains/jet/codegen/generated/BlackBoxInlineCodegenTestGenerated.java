@@ -36,6 +36,11 @@ public class BlackBoxInlineCodegenTestGenerated extends AbstractBlackBoxCodegenT
         JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("compiler/testData/codegen/boxInline"), Pattern.compile("^(.+)$"), false);
     }
     
+    @TestMetadata("captureInlinable")
+    public void testCaptureInlinable() throws Exception {
+        doTestMultiFile("compiler/testData/codegen/boxInline/captureInlinable");
+    }
+    
     @TestMetadata("captureThisAndReceiver")
     public void testCaptureThisAndReceiver() throws Exception {
         doTestMultiFile("compiler/testData/codegen/boxInline/captureThisAndReceiver");
