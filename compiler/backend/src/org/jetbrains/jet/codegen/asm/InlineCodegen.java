@@ -215,7 +215,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
             throw e;
         }
         catch (Exception e) {
-            String text = printNode(node);
+            String text = getNodeText(node);
             throw new CompilationException("Couldn't inline method call '" +
                                        functionDescriptor.getName() +
                                        "' into \n" + BindingContextUtils.descriptorToDeclaration(bindingContext, codegen.getContext().getContextDescriptor()).getText() +
@@ -780,7 +780,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         }
     }
 
-    private String printNode(MethodNode node) {
+    private String getNodeText(MethodNode node) {
         Textifier p = new Textifier();
         node.accept(new TraceMethodVisitor(p));
         StringWriter sw = new StringWriter();
