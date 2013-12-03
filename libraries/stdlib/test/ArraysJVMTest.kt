@@ -59,6 +59,30 @@ class ArraysJVMTest {
         }
     }
 
+    test fun isEmpty() {
+        assertTrue(intArray().isEmpty())
+        assertFalse(intArray(1).isEmpty())
+        assertTrue(byteArray().isEmpty())
+        assertFalse(byteArray(1).isEmpty())
+        assertTrue(shortArray().isEmpty())
+        assertFalse(shortArray(1).isEmpty())
+        assertTrue(longArray().isEmpty())
+        assertFalse(longArray(1).isEmpty())
+        assertTrue(charArray().isEmpty())
+        assertFalse(charArray('a').isEmpty())
+        assertTrue(floatArray().isEmpty())
+        assertFalse(floatArray(0.1).isEmpty())
+        assertTrue(doubleArray().isEmpty())
+        assertFalse(doubleArray(0.1).isEmpty())
+        assertTrue(booleanArray().isEmpty())
+        assertFalse(booleanArray(false).isEmpty())
+    }
+
+    test fun isNotEmpty() {
+        assertFalse(intArray().isNotEmpty())
+        assertTrue(intArray(1).isNotEmpty())
+    }
+
     test fun min() {
         expect(null, { intArray().min() })
         expect(1, { intArray(1).min() })
@@ -79,6 +103,38 @@ class ArraysJVMTest {
         expect(3, { shortArray(3, 2).max() })
         expect(3.0, { floatArray(3.0, 2.0).max() })
         expect(3.0, { doubleArray(2.0, 3.0).max() })
+    }
+
+    test fun minBy() {
+        expect(null, { intArray().minBy { it } })
+        expect(1, { intArray(1).minBy { it } })
+        expect(3, { intArray(2, 3).minBy { -it } })
+        expect(2000000000000, { longArray(3000000000000, 2000000000000).minBy { it + 1 } })
+        expect(1, { byteArray(1, 3, 2).minBy { it * it } })
+        expect(3, { shortArray(3, 2).minBy { "a" } })
+        expect(2.0, { floatArray(3.0, 2.0).minBy { it.toString() } })
+        expect(2.0, { doubleArray(2.0, 3.0).minBy { Math.sqrt(it) } })
+    }
+
+    test fun minIndex() {
+        val a = intArray(1, 7, 9, -42, 54, 93)
+        expect(3, { a.indices.minBy { a[it] } })
+    }
+
+    test fun maxBy() {
+        expect(null, { intArray().maxBy { it } })
+        expect(1, { intArray(1).maxBy { it } })
+        expect(2, { intArray(2, 3).maxBy { -it } })
+        expect(3000000000000, { longArray(3000000000000, 2000000000000).maxBy { it + 1 } })
+        expect(3, { byteArray(1, 3, 2).maxBy { it * it } })
+        expect(3, { shortArray(3, 2).maxBy { "a" } })
+        expect(3.0, { floatArray(3.0, 2.0).maxBy { it.toString() } })
+        expect(3.0, { doubleArray(2.0, 3.0).maxBy { Math.sqrt(it) } })
+    }
+
+    test fun maxIndex() {
+        val a = intArray(1, 7, 9, 239, 54, 93)
+        expect(3, { a.indices.maxBy { a[it] } })
     }
 
     test fun sum() {

@@ -20,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
 import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
-import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
 import org.jetbrains.jet.lang.descriptors.ValueParameterDescriptor;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
 import org.jetbrains.jet.lang.descriptors.annotations.AnnotationDescriptor;
@@ -30,6 +29,14 @@ import org.jetbrains.jet.lang.resolve.constants.EnumValue;
 import java.util.List;
 
 public class InlineUtil {
+
+    public static boolean DEFAULT_INLINE_FLAG = false;
+
+    public static boolean DEFAULT_INLINE_FLAG_FOR_TEST = true;
+
+    public static boolean DEFAULT_INLINE_FLAG_FOR_TOOLWINDOW = false;
+
+    public static boolean DEFAULT_INLINE_FLAG_FOR_STUB = false; /*always false*/
 
     @NotNull
     public static InlineStrategy getInlineType(@NotNull Annotated annotated) {
@@ -55,7 +62,7 @@ public class InlineUtil {
             }
             else {
                 assert argument instanceof EnumValue : "Inline annotation parameter should be inline entry but was: " + argument + "!";
-                PropertyDescriptor value = ((EnumValue)argument).getValue();
+                ClassDescriptor value = ((EnumValue) argument).getValue();
                 String name = value.getName().asString();
                 return name.equals(InlineStrategy.IN_PLACE.name()) ? InlineStrategy.IN_PLACE : InlineStrategy.AS_FUNCTION;
             }

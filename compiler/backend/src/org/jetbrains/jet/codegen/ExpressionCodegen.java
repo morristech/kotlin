@@ -1642,12 +1642,6 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             }
         }
 
-        if (descriptor instanceof VariableDescriptorForObject) {
-            VariableDescriptorForObject variableDescriptor = (VariableDescriptorForObject) descriptor;
-            ClassDescriptor objectClassDescriptor = variableDescriptor.getObjectClass();
-            return genObjectClassInstance(variableDescriptor, objectClassDescriptor);
-        }
-
         int index = lookupLocalIndex(descriptor);
         if (index >= 0) {
             return stackValueForLocal(descriptor, index);
@@ -1674,7 +1668,17 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         }
 
         if (descriptor instanceof ClassDescriptor) {
-            ClassDescriptor classObjectDescriptor = ((ClassDescriptor) descriptor).getClassObjectDescriptor();
+            ClassDescriptor classDescriptor = (ClassDescriptor) descriptor;
+            if (classDescriptor.getKind() == ClassKind.OBJECT) {
+                return StackValue.singleton(classDescriptor, typeMapper);
+            }
+            if (classDescriptor.getKind() == ClassKind.ENUM_ENTRY) {
+                DeclarationDescriptor enumClass = classDescriptor.getContainingDeclaration();
+                assert DescriptorUtils.isEnumClass(enumClass) : "Enum entry should be declared in enum class: " + descriptor;
+                Type type = typeMapper.mapType((ClassDescriptor) enumClass);
+                return StackValue.field(type, type, descriptor.getName().asString(), true);
+            }
+            ClassDescriptor classObjectDescriptor = classDescriptor.getClassObjectDescriptor();
             assert classObjectDescriptor != null : "Class object is not found for " + descriptor;
             return StackValue.singleton(classObjectDescriptor, typeMapper);
         }
@@ -1721,19 +1725,6 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         }
 
         throw new UnsupportedOperationException("don't know how to generate reference " + descriptor);
-    }
-
-    private StackValue genObjectClassInstance(VariableDescriptor variableDescriptor, ClassDescriptor objectClassDescriptor) {
-        boolean isEnumEntry = DescriptorUtils.isEnumClassObject(variableDescriptor.getContainingDeclaration());
-        if (isEnumEntry) {
-            ClassDescriptor containing = (ClassDescriptor) variableDescriptor.getContainingDeclaration().getContainingDeclaration();
-            assert containing != null;
-            Type type = typeMapper.mapType(containing);
-            return StackValue.field(type, type, variableDescriptor.getName().asString(), true);
-        }
-        else {
-            return StackValue.singleton(objectClassDescriptor, typeMapper);
-        }
     }
 
     private StackValue stackValueForLocal(DeclarationDescriptor descriptor, int index) {
@@ -2254,7 +2245,7 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
     }
 
     public StackValue generateThisOrOuter(@NotNull ClassDescriptor calleeContainingClass, boolean isSuper) {
-        boolean isSingleton = CodegenBinding.isSingleton(bindingContext, calleeContainingClass);
+        boolean isSingleton = calleeContainingClass.getKind().isSingleton();
         if (isSingleton) {
             if (context.hasThisDescriptor() && context.getThisDescriptor().equals(calleeContainingClass)) {
                 return StackValue.local(0, typeMapper.mapType(calleeContainingClass));

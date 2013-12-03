@@ -40,12 +40,14 @@ import org.jetbrains.jet.lang.types.expressions.ExpressionTypingServices;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static org.jetbrains.jet.lang.resolve.BindingContext.ANNOTATION_DESCRIPTOR_TO_PSI_ELEMENT;
 import static org.jetbrains.jet.lang.resolve.BindingContext.COMPILE_TIME_INITIALIZER;
+import static org.jetbrains.jet.lang.resolve.DescriptorUtils.isEnumEntry;
 import static org.jetbrains.jet.lang.types.TypeUtils.NO_EXPECTED_TYPE;
 
 public class AnnotationResolver {
@@ -285,23 +287,22 @@ public class AnnotationResolver {
             }
 
             @Override
-            public CompileTimeConstant<?> visitStringTemplateExpression(
-                    @NotNull JetStringTemplateExpression expression,
-                                                                        Void nothing) {
+            public CompileTimeConstant<?> visitStringTemplateExpression(@NotNull JetStringTemplateExpression expression, Void nothing) {
                 return trace.get(BindingContext.COMPILE_TIME_VALUE, expression);
             }
 
             @Override
             public CompileTimeConstant<?> visitSimpleNameExpression(@NotNull JetSimpleNameExpression expression, Void data) {
-                ResolvedCall<? extends CallableDescriptor> resolvedCall =
-                        trace.getBindingContext().get(BindingContext.RESOLVED_CALL, expression);
+                DeclarationDescriptor descriptor = trace.getBindingContext().get(BindingContext.REFERENCE_TARGET, expression);
+                if (descriptor != null && isEnumEntry(descriptor)) {
+                    return new EnumValue((ClassDescriptor) descriptor);
+                }
+
+                ResolvedCall<?> resolvedCall = trace.getBindingContext().get(BindingContext.RESOLVED_CALL, expression);
                 if (resolvedCall != null) {
                     CallableDescriptor callableDescriptor = resolvedCall.getResultingDescriptor();
                     if (callableDescriptor instanceof PropertyDescriptor) {
                         PropertyDescriptor propertyDescriptor = (PropertyDescriptor) callableDescriptor;
-                        if (isEnumProperty(propertyDescriptor)) {
-                            return new EnumValue(propertyDescriptor);
-                        }
                         if (AnnotationUtils.isPropertyAcceptableAsAnnotationParameter(propertyDescriptor)) {
                             return trace.getBindingContext().get(COMPILE_TIME_INITIALIZER, propertyDescriptor);
                         }
@@ -362,25 +363,10 @@ public class AnnotationResolver {
         return expression.accept(visitor, null);
     }
 
-    private static boolean isEnumProperty(@NotNull PropertyDescriptor descriptor) {
-        ClassifierDescriptor classifier = descriptor.getType().getConstructor().getDeclarationDescriptor();
-        return classifier != null &&
-               DescriptorUtils.isEnumClass(classifier) &&
-               DescriptorUtils.isEnumClassObject(descriptor.getContainingDeclaration());
-    }
-
-    @NotNull
-    public List<AnnotationDescriptor> getResolvedAnnotations(@Nullable JetModifierList modifierList, BindingTrace trace) {
-        if (modifierList == null) {
-            return Collections.emptyList();
-        }
-        return getResolvedAnnotations(modifierList.getAnnotationEntries(), trace);
-    }
-
     @SuppressWarnings("MethodMayBeStatic")
     @NotNull
-    public List<AnnotationDescriptor> getResolvedAnnotations(List<JetAnnotationEntry> annotations, BindingTrace trace) {
-        List<AnnotationDescriptor> result = Lists.newArrayList();
+    public List<AnnotationDescriptor> getResolvedAnnotations(@NotNull List<JetAnnotationEntry> annotations, @NotNull BindingTrace trace) {
+        List<AnnotationDescriptor> result = new ArrayList<AnnotationDescriptor>(annotations.size());
         for (JetAnnotationEntry annotation : annotations) {
             AnnotationDescriptor annotationDescriptor = trace.get(BindingContext.ANNOTATION, annotation);
             if (annotationDescriptor == null) {
