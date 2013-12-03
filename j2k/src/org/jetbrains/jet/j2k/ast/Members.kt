@@ -39,6 +39,7 @@ public class MemberList(elements: List<Element>) : WhiteSpaceSeparatedElementLis
 public class ClassMembers(
         val primaryConstructor: Constructor?,
         val secondaryConstructors: MemberList,
+        val allMembers: MemberList,
         val staticMembers: MemberList,
         val nonStaticMembers: MemberList
 ) {
@@ -54,6 +55,7 @@ fun parseClassMembers(elements: List<Element>): ClassMembers {
     val nonStaticMembers = nonConstructors.filter { !it.member.isStatic() }
     return ClassMembers(primaryConstuctor as Constructor?,
                         secondaryConstructors.toMemberList(),
+                        nonConstructors.toMemberList(),
                         staticMembers.toMemberList(),
                         nonStaticMembers.toMemberList())
 }

@@ -44,8 +44,9 @@ public class Enum(converter: Converter,
         primaryConstructorSignatureToKotlin() +
         typeParameterList.toKotlin() +
         implementTypesToKotlin() +
-        " {\n" + classMembers.nonStaticMembers.toKotlin() +
-        (if (primaryConstructorBody.isEmpty()) "" else primaryConstructorBody) +
+        " {" +
+        classMembers.allMembers.toKotlin() +
+        ( if (primaryConstructorBody.isEmpty()) "" else primaryConstructorBody) +
         "}"
     }
 }

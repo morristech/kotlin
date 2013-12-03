@@ -84,10 +84,10 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
     }
 
     public fun convertAnonymousClass(anonymousClass: PsiAnonymousClass): AnonymousClass {
-        return AnonymousClass(this, getMembers(anonymousClass))
+        return AnonymousClass(this, convertMembers(anonymousClass))
     }
 
-    private fun getMembers(psiClass: PsiClass): List<Element> {
+    private fun convertMembers(psiClass: PsiClass): List<Element> {
         val members = ArrayList<Element>()
         for (e in psiClass.getChildren()) {
             val converted = convertMember(e, psiClass)
@@ -107,8 +107,7 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         is PsiClass -> convertClass(e)
         is PsiClassInitializer -> convertInitializer(e)
         is PsiDocComment -> null
-        is PsiComment -> Comment(e.getText()!!)
-        else -> null
+        else -> convertElement(e)
     }
 
     private fun convertClass(psiClass: PsiClass): Class {
@@ -119,7 +118,7 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         val extendsTypes = convertToNotNullableTypes(psiClass.getExtendsListTypes())
         val name: Identifier = Identifier(psiClass.getName()!!)
         val baseClassParams = ArrayList<Expression>()
-        val members = ArrayList(getMembers(psiClass))
+        val members = ArrayList(convertMembers(psiClass))
         val visitor = SuperVisitor()
         psiClass.accept(visitor)
         val resolvedSuperCallParameters = visitor.resolvedSuperCallParameters
