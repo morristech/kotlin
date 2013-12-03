@@ -363,7 +363,10 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
                     Label closureEnd = new Label();
                     InliningAdapter closureInliner = new InliningAdapter(mv, Opcodes.ASM4, desc, closureEnd, getNextLocalIndex(),
                                                               new VarRemapper.ClosureRemapper(info, valueParamShift, tempTypes));
+
+                    info.getNode().instructions.resetLabels();
                     info.getNode().accept(closureInliner); //TODO
+
                     remapper.setNestedRemap(false);
                     mv.visitLabel(closureEnd);
 
