@@ -1565,6 +1565,11 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
                 JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("compiler/testData/diagnostics/tests/controlStructures"), Pattern.compile("^(.+)\\.kt$"), true);
             }
             
+            @TestMetadata("emptyIf.kt")
+            public void testEmptyIf() throws Exception {
+                doTest("compiler/testData/diagnostics/tests/controlStructures/emptyIf.kt");
+            }
+            
             @TestMetadata("forLoopWithNullableRange.kt")
             public void testForLoopWithNullableRange() throws Exception {
                 doTest("compiler/testData/diagnostics/tests/controlStructures/forLoopWithNullableRange.kt");
@@ -1755,6 +1760,11 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
             @TestMetadata("CalleeExpression.kt")
             public void testCalleeExpression() throws Exception {
                 doTest("compiler/testData/diagnostics/tests/dataFlow/CalleeExpression.kt");
+            }
+            
+            @TestMetadata("EmptyIf.kt")
+            public void testEmptyIf() throws Exception {
+                doTest("compiler/testData/diagnostics/tests/dataFlow/EmptyIf.kt");
             }
             
             @TestMetadata("IsExpression.kt")
@@ -2976,6 +2986,11 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
                 doTest("compiler/testData/diagnostics/tests/generics/RecursiveUpperBoundWithTwoArguments.kt");
             }
             
+            @TestMetadata("resolveGenericBoundsBeforeSupertypes.kt")
+            public void testResolveGenericBoundsBeforeSupertypes() throws Exception {
+                doTest("compiler/testData/diagnostics/tests/generics/resolveGenericBoundsBeforeSupertypes.kt");
+            }
+            
             @TestMetadata("compiler/testData/diagnostics/tests/generics/tpAsReified")
             public static class TpAsReified extends AbstractDiagnosticsTestWithEagerResolve {
                 public void testAllFilesPresentInTpAsReified() throws Exception {
@@ -3917,7 +3932,7 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
                 public void testContains() throws Exception {
                     doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/contains.kt");
                 }
-
+                
                 @TestMetadata("mathOperations.kt")
                 public void testMathOperations() throws Exception {
                     doTest("compiler/testData/diagnostics/tests/inline/binaryExpressions/mathOperations.kt");
@@ -4603,6 +4618,11 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
         public static class Numbers extends AbstractDiagnosticsTestWithEagerResolve {
             public void testAllFilesPresentInNumbers() throws Exception {
                 JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("compiler/testData/diagnostics/tests/numbers"), Pattern.compile("^(.+)\\.kt$"), true);
+            }
+            
+            @TestMetadata("characterIsNotANumber.kt")
+            public void testCharacterIsNotANumber() throws Exception {
+                doTest("compiler/testData/diagnostics/tests/numbers/characterIsNotANumber.kt");
             }
             
             @TestMetadata("doublesInSimpleConstraints.kt")

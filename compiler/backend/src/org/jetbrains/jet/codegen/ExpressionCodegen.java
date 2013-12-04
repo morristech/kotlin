@@ -357,7 +357,7 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         return genQualified(receiver, expression.getBaseExpression());
     }
 
-    private static boolean isEmptyExpression(JetElement expr) {
+    private static boolean isEmptyExpression(@Nullable JetElement expr) {
         if (expr == null) {
             return true;
         }
@@ -382,10 +382,6 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
 
         JetExpression thenExpression = expression.getThen();
         JetExpression elseExpression = expression.getElse();
-
-        if (thenExpression == null && elseExpression == null) {
-            throw new CompilationException("Both brunches of if/else are null", null, expression);
-        }
 
         if (isEmptyExpression(thenExpression)) {
             if (isEmptyExpression(elseExpression)) {
@@ -429,7 +425,11 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         StackValue conditionValue = gen(expression.getCondition());
         conditionValue.condJump(end, true, v);
 
-        gen(expression.getBody(), Type.VOID_TYPE);
+        JetExpression body = expression.getBody();
+        if (body != null) {
+            gen(body, Type.VOID_TYPE);
+        }
+
         v.goTo(condition);
 
         v.mark(end);
@@ -465,7 +465,10 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             conditionValue = generateBlock(statements, true);
         }
         else {
-            gen(body, Type.VOID_TYPE);
+            if (body != null) {
+                gen(body, Type.VOID_TYPE);
+            }
+
             conditionValue = gen(condition);
         }
 
@@ -649,7 +652,10 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         protected abstract void increment(@NotNull Label loopExit);
 
         public void body() {
-            gen(forExpression.getBody(), Type.VOID_TYPE);
+            JetExpression body = forExpression.getBody();
+            if (body != null) {
+                gen(body, Type.VOID_TYPE);
+            }
         }
 
         private void scheduleLeaveVariable(Runnable runnable) {

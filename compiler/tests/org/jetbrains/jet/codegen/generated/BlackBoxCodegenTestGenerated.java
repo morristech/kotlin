@@ -1427,6 +1427,26 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
             doTest("compiler/testData/codegen/box/controlStructures/doWhileFib.kt");
         }
         
+        @TestMetadata("emptyDoWhile.kt")
+        public void testEmptyDoWhile() throws Exception {
+            doTest("compiler/testData/codegen/box/controlStructures/emptyDoWhile.kt");
+        }
+        
+        @TestMetadata("emptyFor.kt")
+        public void testEmptyFor() throws Exception {
+            doTest("compiler/testData/codegen/box/controlStructures/emptyFor.kt");
+        }
+        
+        @TestMetadata("emptyIf.kt")
+        public void testEmptyIf() throws Exception {
+            doTest("compiler/testData/codegen/box/controlStructures/emptyIf.kt");
+        }
+        
+        @TestMetadata("emptyWhile.kt")
+        public void testEmptyWhile() throws Exception {
+            doTest("compiler/testData/codegen/box/controlStructures/emptyWhile.kt");
+        }
+        
         @TestMetadata("finallyOnEmptyReturn.kt")
         public void testFinallyOnEmptyReturn() throws Exception {
             doTest("compiler/testData/codegen/box/controlStructures/finallyOnEmptyReturn.kt");
@@ -3787,6 +3807,21 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
             doTest("compiler/testData/codegen/box/primitiveTypes/kt3576.kt");
         }
         
+        @TestMetadata("kt4098.kt")
+        public void testKt4098() throws Exception {
+            doTest("compiler/testData/codegen/box/primitiveTypes/kt4098.kt");
+        }
+        
+        @TestMetadata("kt4210.kt")
+        public void testKt4210() throws Exception {
+            doTest("compiler/testData/codegen/box/primitiveTypes/kt4210.kt");
+        }
+        
+        @TestMetadata("kt4251.kt")
+        public void testKt4251() throws Exception {
+            doTest("compiler/testData/codegen/box/primitiveTypes/kt4251.kt");
+        }
+        
         @TestMetadata("kt446.kt")
         public void testKt446() throws Exception {
             doTest("compiler/testData/codegen/box/primitiveTypes/kt446.kt");
@@ -3870,6 +3905,11 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
         @TestMetadata("nullAsNullableIntIsNull.kt")
         public void testNullAsNullableIntIsNull() throws Exception {
             doTest("compiler/testData/codegen/box/primitiveTypes/nullAsNullableIntIsNull.kt");
+        }
+        
+        @TestMetadata("nullableCharBoolean.kt")
+        public void testNullableCharBoolean() throws Exception {
+            doTest("compiler/testData/codegen/box/primitiveTypes/nullableCharBoolean.kt");
         }
         
         @TestMetadata("unboxComparable.kt")
@@ -4523,6 +4563,11 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
     public static class Unit extends AbstractBlackBoxCodegenTest {
         public void testAllFilesPresentInUnit() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("compiler/testData/codegen/box/unit"), Pattern.compile("^(.+)\\.kt$"), true);
+        }
+        
+        @TestMetadata("unitClassObject.kt")
+        public void testUnitClassObject() throws Exception {
+            doTest("compiler/testData/codegen/box/unit/unitClassObject.kt");
         }
         
         @TestMetadata("UnitValue.kt")
