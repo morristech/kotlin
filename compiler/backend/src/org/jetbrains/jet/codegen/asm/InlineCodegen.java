@@ -55,7 +55,7 @@ import java.util.*;
 
 import static org.jetbrains.jet.codegen.AsmUtil.getMethodAsmFlags;
 
-public class InlineCodegen implements ParentCodegenAware, Inliner {
+public class InlineCodegen extends InlineTransformer implements ParentCodegenAware, Inliner {
 
     public final static String INVOKE = "invoke";
 
@@ -71,13 +71,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
 
     private final List<ParameterInfo> tempTypes = new ArrayList<ParameterInfo>();
 
-    private final List<InlinableInvocation> inlinableInvocation = new ArrayList<InlinableInvocation>();
-    
-    private final List<ConstructorInvocation> constructorInvocation = new ArrayList<ConstructorInvocation>();
-
     private final Map<Integer, ClosureInfo> expressionMap = new HashMap<Integer, ClosureInfo>();
-
-    private final JetTypeMapper typeMapper;
 
     private final BindingContext bindingContext;
 
@@ -100,13 +94,13 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
             @NotNull SimpleFunctionDescriptor functionDescriptor,
             @NotNull Call call
     ) {
+        super(codegen.getTypeMapper());
         this.codegen = codegen;
         this.notSeparateInline = notSeparateInline;
         this.state = state;
         this.disabled = disabled;
         this.functionDescriptor = functionDescriptor.getOriginal();
         this.call = call;
-        typeMapper = codegen.getTypeMapper();
         bindingContext = codegen.getBindingContext();
         initialFrameSize = codegen.getFrameMap().getCurrentSize();
 
@@ -140,7 +134,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
     @NotNull
     private MethodNode createMethodNode(CallableMethod callableMethod)
             throws ClassNotFoundException, IOException {
-        MethodNode node = null;
+        MethodNode node;
         if (functionDescriptor instanceof DeserializedSimpleFunctionDescriptor) {
             VirtualFile file = InlineCodegenUtil.getVirtualFileForCallable((DeserializedSimpleFunctionDescriptor) functionDescriptor, state);
             node = InlineCodegenUtil.getMethodNode(file.getInputStream(), functionDescriptor.getName().asString(),
@@ -280,7 +274,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         }
     }
 
-    private void doInline(
+    protected void doInline(
             int access,
             String desc,
             MethodVisitor mv,
@@ -294,9 +288,8 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
 
         final LinkedList<InlinableInvocation> infos = new LinkedList<InlinableInvocation>(inlinableInvocation);
         methodNode.instructions.resetLabels();
-        MethodVisitor methodVisitor = codegen.getMethodVisitor();
 
-        InliningAdapter inliner = new InliningAdapter(methodVisitor, Opcodes.ASM4, desc, end, frameSize, remapper) {
+        InliningAdapter inliner = new InliningAdapter(mv, Opcodes.ASM4, desc, end, frameSize, remapper) {
 
             @Override
             public void anew(Type type) {
@@ -342,7 +335,7 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
 
         methodNode.accept(inliner);
 
-        methodVisitor.visitLabel(end);
+        mv.visitLabel(end);
     }
 
     private boolean isInvokeOnInlinable(String owner, String name) {
