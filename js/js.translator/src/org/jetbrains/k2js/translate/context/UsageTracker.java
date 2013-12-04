@@ -165,6 +165,21 @@ public final class UsageTracker {
         return false;
     }
 
+    public boolean isCaptured(CallableDescriptor descriptor) {
+        if (capturedVariables != null && capturedVariables.contains(descriptor)) {
+            return true;
+        }
+
+        if (children != null) {
+            for (UsageTracker child : children) {
+                if (child.isCaptured(descriptor)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     // differs from DescriptorUtils - fails if reach NamespaceDescriptor
     private static boolean isAncestor(
             @NotNull DeclarationDescriptor ancestor,
