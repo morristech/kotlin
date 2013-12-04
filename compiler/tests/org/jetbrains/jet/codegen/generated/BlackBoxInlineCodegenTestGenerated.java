@@ -76,9 +76,9 @@ public class BlackBoxInlineCodegenTestGenerated extends AbstractBlackBoxCodegenT
         doTestMultiFile("compiler/testData/codegen/boxInline/namespace");
     }
     
-    @TestMetadata("noinline")
-    public void testNoinline() throws Exception {
-        doTestMultiFile("compiler/testData/codegen/boxInline/noinline");
+    @TestMetadata("noInline")
+    public void testNoInline() throws Exception {
+        doTestMultiFile("compiler/testData/codegen/boxInline/noInline");
     }
     
     @TestMetadata("params")
@@ -114,6 +114,11 @@ public class BlackBoxInlineCodegenTestGenerated extends AbstractBlackBoxCodegenT
     @TestMetadata("tryCatchFinally")
     public void testTryCatchFinally() throws Exception {
         doTestMultiFile("compiler/testData/codegen/boxInline/tryCatchFinally");
+    }
+    
+    @TestMetadata("withoutInline")
+    public void testWithoutInline() throws Exception {
+        doTestMultiFile("compiler/testData/codegen/boxInline/withoutInline");
     }
     
 }

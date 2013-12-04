@@ -76,9 +76,9 @@ public class CompileKotlinAgainstInlineKotlinTestGenerated extends AbstractCompi
         doBoxTest("compiler/testData/codegen/boxInline/namespace");
     }
     
-    @TestMetadata("noinline")
-    public void testNoinline() throws Exception {
-        doBoxTest("compiler/testData/codegen/boxInline/noinline");
+    @TestMetadata("noInline")
+    public void testNoInline() throws Exception {
+        doBoxTest("compiler/testData/codegen/boxInline/noInline");
     }
     
     @TestMetadata("params")
@@ -114,6 +114,11 @@ public class CompileKotlinAgainstInlineKotlinTestGenerated extends AbstractCompi
     @TestMetadata("tryCatchFinally")
     public void testTryCatchFinally() throws Exception {
         doBoxTest("compiler/testData/codegen/boxInline/tryCatchFinally");
+    }
+    
+    @TestMetadata("withoutInline")
+    public void testWithoutInline() throws Exception {
+        doBoxTest("compiler/testData/codegen/boxInline/withoutInline");
     }
     
 }
