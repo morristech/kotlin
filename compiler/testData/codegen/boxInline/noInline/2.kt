@@ -4,7 +4,7 @@ fun test1(): Int {
 
 
 fun box(): String {
-    if (test1() != 66) return "test1: ${test1()}"
+    if (test1() != 110) return "test1: ${test1()}"
 
     return "OK"
 }

@@ -45,6 +45,7 @@ import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingContextUtils;
 import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
+import org.jetbrains.jet.lang.types.lang.InlineUtil;
 import org.jetbrains.jet.renderer.DescriptorRenderer;
 
 import java.io.IOException;
@@ -70,7 +71,9 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
 
     private final List<ParameterInfo> tempTypes = new ArrayList<ParameterInfo>();
 
-    private final List<ClosureUsage> closures = new ArrayList<ClosureUsage>();
+    private final List<InlinableInvocation> inlinableInvocation = new ArrayList<InlinableInvocation>();
+    
+    private final List<ConstructorInvocation> constructorInvocation = new ArrayList<ConstructorInvocation>();
 
     private final Map<Integer, ClosureInfo> expressionMap = new HashMap<Integer, ClosureInfo>();
 
@@ -230,22 +233,46 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
         while (cur != null) {
             if (cur.getType() == AbstractInsnNode.METHOD_INSN) {
                 MethodInsnNode methodInsnNode = (MethodInsnNode) cur;
+                String owner = methodInsnNode.owner;
+                String desc = methodInsnNode.desc;
+                String name = methodInsnNode.name;
                 //TODO check closure
-                if (isInvokeOnInlinable(methodInsnNode.owner, methodInsnNode.name) /*&& methodInsnNode.owner.equals(INLINE_RUNTIME)*/) {
+                if (isInvokeOnInlinable(owner, name) /*&& methodInsnNode.owner.equals(INLINE_RUNTIME)*/) {
                     Frame<SourceValue> frame = sources[index];
-                    SourceValue sourceValue = frame.getStack(frame.getStackSize() - Type.getArgumentTypes(methodInsnNode.desc).length - 1);
+                    SourceValue sourceValue = frame.getStack(frame.getStackSize() - Type.getArgumentTypes(desc).length - 1);
                     assert sourceValue.insns.size() == 1;
 
                     AbstractInsnNode insnNode = sourceValue.insns.iterator().next();
                     assert insnNode.getType() == AbstractInsnNode.VAR_INSN && insnNode.getOpcode() == Opcodes.ALOAD;
+
                     int varIndex = ((VarInsnNode) insnNode).var;
                     ClosureInfo closureInfo = expressionMap.get(varIndex);
-                    if (closureInfo != null) { //TODO: maybe add separate map for noninlinable closures
-                        closures.add(new ClosureUsage(varIndex, true));
+                    boolean isInlinable = closureInfo != null;
+                    if (isInlinable) { //TODO: maybe add separate map for noninlinable inlinableInvocation
                         node.instructions.remove(insnNode);
-                    } else {
-                        closures.add(new ClosureUsage(varIndex, false));
                     }
+                    inlinableInvocation.add(new InlinableInvocation(varIndex, isInlinable));
+                }
+                else if (isFunctionConstructorCall(owner, name)) {
+                    Frame<SourceValue> frame = sources[index];
+                    int paramSize = frame.getStackSize() - Type.getArgumentTypes(desc).length - 1;
+                    ArrayList<ClosureInfo> infos = new ArrayList<ClosureInfo>();
+                    for (int i = 0; i < paramSize; i++) {
+                        SourceValue sourceValue = frame.getStack(paramSize);
+                        if (sourceValue.insns.size() == 1) {
+                            AbstractInsnNode insnNode = sourceValue.insns.iterator().next();
+                            if (insnNode.getType() == AbstractInsnNode.VAR_INSN && insnNode.getOpcode() == Opcodes.ALOAD) {
+                                int varIndex = ((VarInsnNode) insnNode).var;
+                                ClosureInfo closureInfo = expressionMap.get(varIndex);
+                                if (closureInfo != null) {
+                                    infos.add(closureInfo);
+                                }
+                            }
+                        }
+                    }
+
+                    ConstructorInvocation invocation = new ConstructorInvocation(owner, false);
+                    constructorInvocation.add(invocation);
                 }
             }
             cur = cur.getNext();
@@ -265,19 +292,25 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
 
         Label end = new Label();
 
-        final LinkedList<ClosureUsage> infos = new LinkedList<ClosureUsage>(closures);
+        final LinkedList<InlinableInvocation> infos = new LinkedList<InlinableInvocation>(inlinableInvocation);
         methodNode.instructions.resetLabels();
         MethodVisitor methodVisitor = codegen.getMethodVisitor();
 
         InliningAdapter inliner = new InliningAdapter(methodVisitor, Opcodes.ASM4, desc, end, frameSize, remapper) {
+
+            @Override
+            public void anew(Type type) {
+                super.anew(type);
+            }
+
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
                 if (inlineClosures && /*INLINE_RUNTIME.equals(owner) &&*/ isInvokeOnInlinable(owner, name)) { //TODO add method
                     assert !infos.isEmpty();
-                    ClosureUsage closureUsage = infos.remove();
-                    ClosureInfo info = expressionMap.get(closureUsage.index);
+                    InlinableInvocation inlinableInvocation = infos.remove();
+                    ClosureInfo info = expressionMap.get(inlinableInvocation.index);
 
-                    if (!closureUsage.isInlinable()) {
+                    if (!inlinableInvocation.isInlinable()) {
                         //noninlinable closure
                         super.visitMethodInsn(opcode, owner, name, desc);
                         return;
@@ -314,6 +347,40 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
 
     private boolean isInvokeOnInlinable(String owner, String name) {
         return INVOKE.equals(name) && /*TODO: check type*/owner.contains("Function");
+    }
+
+
+    private boolean isFunctionConstructorCall(@NotNull String internalName, @NotNull String name) {
+        if (!"<init>".equals(name)) {
+            return false;
+        }
+
+        return isFunctionLiteralClass(internalName);
+    }
+
+    private boolean isFunctionLiteralClass(String internalName) {
+        String shortName = getLastNamePart(internalName);
+        int index = shortName.lastIndexOf("$");
+
+        if (index < 0) {
+            return false;
+        }
+
+        String suffix = shortName.substring(index + 1);
+        for (char c : suffix.toCharArray()) {
+            if (!Character.isDigit(c)) return false;
+        }
+        return true;
+    }
+
+    @NotNull
+    private String getLastNamePart(@NotNull String internalName) {
+        int index = internalName.lastIndexOf("/");
+        return index < 0 ? internalName : internalName.substring(index + 1);
+    }
+
+    private boolean isInitCallOfFunction(String owner, String name) {
+        return "<init>".equals(name);
     }
 
 
@@ -422,10 +489,10 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
     }
 
     @Override
-    public void putInLocal(Type type, StackValue stackValue) {
+    public void putInLocal(Type type, StackValue stackValue, ValueParameterDescriptor valueParameterDescriptor) {
         if (!disabled && notSeparateInline && Type.VOID_TYPE != type) {
             //TODO remap only inlinable closure => otherwise we could get a lot of problem
-            boolean couldBeRemapped = !shouldPutValue(type, stackValue, codegen.getContext());
+            boolean couldBeRemapped = !shouldPutValue(type, stackValue, codegen.getContext(), valueParameterDescriptor);
             int remappedIndex = couldBeRemapped ? ((StackValue.Local) stackValue).getIndex() : -1;
 
             ParameterInfo info = new ParameterInfo(type, false, remappedIndex, couldBeRemapped ? -1 : codegen.getFrameMap().enterTemp(type));
@@ -435,11 +502,11 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
     }
 
     @Override
-    public boolean shouldPutValue(Type type, StackValue stackValue, MethodContext context) {
+    public boolean shouldPutValue(Type type, StackValue stackValue, MethodContext context, ValueParameterDescriptor descriptor) {
         if (stackValue != null && context.isInlineFunction() && stackValue instanceof StackValue.Local) {
-            if (isInvokeOnInlinable(type.getClassName(), "invoke")) {
+            if (isInvokeOnInlinable(type.getClassName(), "invoke") && (descriptor == null || !InlineUtil.hasNoinlineAnnotation(descriptor))) {
                 //TODO remap only inlinable closure => otherwise we could get a lot of problem
-                return false; //TODO check annotations
+                return false;
             }
         }
         return true;
@@ -533,8 +600,10 @@ public class InlineCodegen implements ParentCodegenAware, Inliner {
     }
 
     @Override
-    public boolean isInliningClosure(JetExpression expression) {
-        return !disabled && expression instanceof JetFunctionLiteralExpression;
+    public boolean isInliningClosure(JetExpression expression, ValueParameterDescriptor valueParameterDescriptora) {
+        return !disabled &&
+               expression instanceof JetFunctionLiteralExpression &&
+               !InlineUtil.hasNoinlineAnnotation(valueParameterDescriptora);
     }
 
     @Override

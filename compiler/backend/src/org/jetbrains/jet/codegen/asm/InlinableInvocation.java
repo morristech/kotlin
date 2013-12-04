@@ -16,13 +16,13 @@
 
 package org.jetbrains.jet.codegen.asm;
 
-class ClosureUsage {
+class InlinableInvocation {
 
     public final int index;
 
     public final boolean inlinable;
 
-    ClosureUsage(int index, boolean isInlinable) {
+    InlinableInvocation(int index, boolean isInlinable) {
         this.index = index;
         inlinable = isInlinable;
     }
