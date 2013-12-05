@@ -29,6 +29,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.util.ArrayUtil;
 import jet.Function1;
 import kotlin.KotlinPackage;
@@ -88,8 +89,12 @@ public abstract class KotlinIntegrationTestBase {
         commandLine.setExePath(getJavaRuntime().getAbsolutePath());
         commandLine.addParameters(arguments);
 
+
+        File expectedFile = new File(testDataDir, logName + ".expected");
+        String[] expected = StringUtil.convertLineSeparators(FileUtil.loadFile(expectedFile, CharsetToolkit.UTF8, true)).split("\n");
+
         StringBuilder executionLog = new StringBuilder();
-        int exitCode = runProcess(commandLine, executionLog);
+        int exitCode = runProcess(commandLine, executionLog, expected);
 
         if (logName == null) {
             assertEquals("Non-zero exit code", 0, exitCode);
@@ -144,7 +149,7 @@ public abstract class KotlinIntegrationTestBase {
         }
     }
 
-    protected static int runProcess(GeneralCommandLine commandLine, StringBuilder executionLog) throws ExecutionException {
+    protected int runProcess(GeneralCommandLine commandLine, StringBuilder executionLog, final String[] expected) throws ExecutionException {
         OSProcessHandler handler =
                 new OSProcessHandler(commandLine.createProcess(), commandLine.getCommandLineString(), commandLine.getCharset());
 
@@ -152,12 +157,23 @@ public abstract class KotlinIntegrationTestBase {
         final StringBuilder errContent = new StringBuilder();
 
         handler.addProcessListener(new ProcessAdapter() {
+            private int i = -1;
+
             @Override
             public void onTextAvailable(ProcessEvent event, Key outputType) {
                 if (outputType == ProcessOutputTypes.SYSTEM) {
                     System.out.print(event.getText());
                 }
                 else if (outputType == ProcessOutputTypes.STDOUT) {
+                    String text = "OUT " + StringUtil.trimTrailing(normalizeOutput(event.getText()));
+                    if (!text.equals(expected[++i])) {
+                        StringBuilder sb = new StringBuilder();
+                        for (byte b : text.getBytes()) {
+                            sb.append(b).append(",");
+                        }
+                        throw  new RuntimeException("i = " + i + ",\nevent.text = " + text + ", bytes = [" +  sb + "],\nexpected = " + expected[i]);
+                    }
+
                     appendToContent(outContent, "OUT ", event.getText());
                 }
                 else if (outputType == ProcessOutputTypes.STDERR) {
