@@ -18,7 +18,9 @@ package org.jetbrains.jet.cfg;
 
 import com.google.common.collect.Sets;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.ConfigurationKind;
 import org.jetbrains.jet.JetTestUtils;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
@@ -53,11 +55,15 @@ public abstract class AbstractControlFlowTest extends KotlinTestWithEnvironment 
         List<JetDeclaration> declarations = jetFile.getDeclarations();
         BindingContext bindingContext = analyzeExhaust.getBindingContext();
         for (JetDeclaration declaration : declarations) {
-            Pseudocode pseudocode = PseudocodeUtil.generatePseudocode(declaration, bindingContext);
-            data.put(declaration, pseudocode);
-            for (LocalDeclarationInstruction instruction : pseudocode.getLocalDeclarations()) {
-                Pseudocode localPseudocode = instruction.getBody();
-                data.put(localPseudocode.getCorrespondingElement(), localPseudocode);
+            addDeclaration(data, bindingContext, declaration);
+
+            if (declaration instanceof JetDeclarationContainer) {
+                for (JetDeclaration member : ((JetDeclarationContainer) declaration).getDeclarations()) {
+                    // Properties and initializers are processed elsewhere
+                    if (member instanceof JetNamedFunction) {
+                        addDeclaration(data, bindingContext, member);
+                    }
+                }
             }
         }
 
@@ -71,6 +77,15 @@ public abstract class AbstractControlFlowTest extends KotlinTestWithEnvironment 
             if ("true".equals(System.getProperty("jet.control.flow.test.dump.graphs"))) {
                 dumpDot(file, data.values());
             }
+        }
+    }
+
+    private void addDeclaration(Map<JetElement, Pseudocode> data, BindingContext bindingContext, JetDeclaration declaration) {
+        Pseudocode pseudocode = PseudocodeUtil.generatePseudocode(declaration, bindingContext);
+        data.put(declaration, pseudocode);
+        for (LocalFunctionDeclarationInstruction instruction : pseudocode.getLocalDeclarations()) {
+            Pseudocode localPseudocode = instruction.getBody();
+            data.put(localPseudocode.getCorrespondingElement(), localPseudocode);
         }
     }
 
@@ -121,11 +136,6 @@ public abstract class AbstractControlFlowTest extends KotlinTestWithEnvironment 
         }
 
         File expectedInstructionsFile = JetTestUtils.replaceExtension(file, "instructions");
-        if (!expectedInstructionsFile.exists()) {
-            FileUtil.writeToFile(expectedInstructionsFile, instructionDump.toString());
-            fail("No expected instructions for " + FileUtil.getNameWithoutExtension(file) + " generated result is written into " + expectedInstructionsFile);
-        }
-
         JetTestUtils.assertEqualsToFile(expectedInstructionsFile, instructionDump.toString());
 
 //                        StringBuilder graphDump = new StringBuilder();
@@ -226,11 +236,11 @@ public abstract class AbstractControlFlowTest extends KotlinTestWithEnvironment 
                 maxNextLength = instructionListText.length();
             }
         }
-        for (int i = 0, instructionsSize = instructions.size(); i < instructionsSize; i++) {
+        for (int i = 0; i < instructions.size(); i++) {
             Instruction instruction = instructions.get(i);
-            if (instruction instanceof LocalDeclarationInstruction) {
-                LocalDeclarationInstruction localDeclarationInstruction = (LocalDeclarationInstruction) instruction;
-                locals.add((PseudocodeImpl) localDeclarationInstruction.getBody());
+            if (instruction instanceof LocalFunctionDeclarationInstruction) {
+                LocalFunctionDeclarationInstruction localFunctionDeclarationInstruction = (LocalFunctionDeclarationInstruction) instruction;
+                locals.add((PseudocodeImpl) localFunctionDeclarationInstruction.getBody());
             }
             for (PseudocodeImpl.PseudocodeLabel label: labels) {
                 if (label.getTargetInstructionIndex() == i) {
@@ -238,20 +248,42 @@ public abstract class AbstractControlFlowTest extends KotlinTestWithEnvironment 
                 }
             }
 
-            out.append(formatInstruction(instruction, maxLength, remainedAfterPostProcessInstructions)).
-                    append("    NEXT:").append(String.format("%1$-" + maxNextLength + "s", formatInstructionList(instruction.getNextInstructions()))).
-                    append("    PREV:").append(formatInstructionList(instruction.getPreviousInstructions())).append("\n");
+            StringBuilder line = new StringBuilder();
+
+            line.append(formatInstruction(instruction, maxLength, remainedAfterPostProcessInstructions));
+
+            // Only print NEXT and PREV if the values are non-trivial
+            Instruction next = i == instructions.size() - 1 ? null : instructions.get(i + 1);
+            Collection<Instruction> nextInstructions = instruction.getNextInstructions();
+            if (!sameContents(next, nextInstructions)) {
+                line.append("    NEXT:").append(String.format("%1$-" + maxNextLength + "s", formatInstructionList(nextInstructions)));
+            }
+
+            Instruction prev = i == 0 ? null : instructions.get(i - 1);
+            Collection<Instruction> previousInstructions = instruction.getPreviousInstructions();
+            if (!sameContents(prev, previousInstructions)) {
+                line.append("    PREV:").append(formatInstructionList(previousInstructions));
+            }
+            out.append(StringUtil.trimTrailing(line.toString()));
+            out.append("\n");
         }
         for (PseudocodeImpl local : locals) {
             dumpInstructions(local, out);
         }
     }
 
+    private static boolean sameContents(@Nullable Instruction natural, Collection<Instruction> actual) {
+        if (natural == null) {
+            return actual.isEmpty();
+        }
+        return Collections.singleton(natural).equals(new HashSet<Instruction>(actual));
+    }
+
     public void dumpEdges(List<Instruction> instructions,  final PrintStream out, final int[] count, final Map<Instruction, String> nodeToName) {
         for (Instruction fromInst : instructions) {
             fromInst.accept(new InstructionVisitor() {
                 @Override
-                public void visitLocalDeclarationInstruction(LocalDeclarationInstruction instruction) {
+                public void visitLocalFunctionDeclarationInstruction(LocalFunctionDeclarationInstruction instruction) {
                     int index = count[0];
 //                    instruction.getBody().dumpSubgraph(out, "subgraph cluster_" + index, count, "color=blue;\nlabel = \"f" + index + "\";", nodeToName);
                     printEdge(out, nodeToName.get(instruction), nodeToName.get(((PseudocodeImpl)instruction.getBody()).getAllInstructions().get(0)), null);
@@ -336,7 +368,7 @@ public abstract class AbstractControlFlowTest extends KotlinTestWithEnvironment 
             else if (node instanceof UnsupportedElementInstruction) {
                 shape = "box, fillcolor=red, style=filled";
             }
-            else if (node instanceof LocalDeclarationInstruction) {
+            else if (node instanceof LocalFunctionDeclarationInstruction) {
                 shape = "Mcircle";
             }
             else if (node instanceof SubroutineEnterInstruction || node instanceof SubroutineExitInstruction) {

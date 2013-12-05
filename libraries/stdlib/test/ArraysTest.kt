@@ -71,7 +71,7 @@ class ArraysTest {
     test fun floatArray() {
         val arr = FloatArray(2)
 
-        val expected: Float = 0.0
+        val expected: Float = 0.0.toFloat()
         assertEquals(arr.size, 2)
         assertEquals(expected, arr[0])
         assertEquals(expected, arr[1])
@@ -155,7 +155,7 @@ class ArraysTest {
         expect(50000) { array<Short>(20000, 30000).sum() }
         //TODO: uncomment when toLong() will be supported
         //expect(3000000000000) { array<Long>(1000000000000, 2000000000000).sum() }
-        expect(3.0) { array<Float>(1.0, 2.0).sum() }
+        expect(3.0.toFloat()) { array<Float>(1.0.toFloat(), 2.0.toFloat()).sum() }
     }
     /*
 

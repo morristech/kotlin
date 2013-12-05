@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.impl.MutableClassDescriptor;
+import org.jetbrains.jet.lang.evaluate.ConstantExpressionEvaluator;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.calls.CallResolver;
 import org.jetbrains.jet.lang.resolve.calls.context.ContextDependency;
@@ -555,8 +556,8 @@ public class BodyResolver {
                 scope, propertyDescriptor.getTypeParameters(), NO_RECEIVER_PARAMETER, trace);
         JetType expectedTypeForInitializer = property.getTypeRef() != null ? propertyDescriptor.getType() : NO_EXPECTED_TYPE;
         expressionTypingServices.getType(propertyDeclarationInnerScope, initializer, expectedTypeForInitializer, context.getOuterDataFlowInfo(), trace);
-        if (AnnotationUtils.isPropertyAcceptableAsAnnotationParameter(propertyDescriptor)) {
-            CompileTimeConstant<?> constant = annotationResolver.resolveExpressionToCompileTimeValue(initializer, expectedTypeForInitializer, trace);
+        if (AnnotationUtils.isPropertyCompileTimeConstant(propertyDescriptor)) {
+            CompileTimeConstant<?> constant = AnnotationResolver.resolveExpressionToCompileTimeValue(initializer, expectedTypeForInitializer, trace);
             if (constant != null) {
                 trace.record(BindingContext.COMPILE_TIME_INITIALIZER, propertyDescriptor, constant);
             }

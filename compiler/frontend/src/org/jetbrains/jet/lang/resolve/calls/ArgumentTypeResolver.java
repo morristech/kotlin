@@ -22,16 +22,14 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
 import org.jetbrains.jet.lang.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.jet.lang.diagnostics.Errors;
+import org.jetbrains.jet.lang.evaluate.ConstantExpressionEvaluator;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.*;
 import org.jetbrains.jet.lang.resolve.calls.context.CallResolutionContext;
 import org.jetbrains.jet.lang.resolve.calls.context.CheckValueArgumentsMode;
 import org.jetbrains.jet.lang.resolve.calls.context.ResolutionContext;
 import org.jetbrains.jet.lang.resolve.calls.model.MutableDataFlowInfoForArguments;
-import org.jetbrains.jet.lang.resolve.constants.CompileTimeConstant;
-import org.jetbrains.jet.lang.resolve.constants.CompileTimeConstantResolver;
-import org.jetbrains.jet.lang.resolve.constants.ErrorValue;
-import org.jetbrains.jet.lang.resolve.constants.NumberValueTypeConstructor;
+import org.jetbrains.jet.lang.resolve.constants.IntegerValueTypeConstructor;
 import org.jetbrains.jet.lang.resolve.scopes.JetScope;
 import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.JetTypeInfo;
@@ -262,48 +260,44 @@ public class ArgumentTypeResolver {
     }
 
     @Nullable
-    public <D extends CallableDescriptor> JetType updateResultArgumentTypeIfNotDenotable(
+    public static <D extends CallableDescriptor> JetType updateResultArgumentTypeIfNotDenotable(
             @NotNull ResolutionContext context,
             @NotNull JetExpression expression
     ) {
         JetType type = context.trace.get(BindingContext.EXPRESSION_TYPE, expression);
         if (type != null && !type.getConstructor().isDenotable()) {
-            if (type.getConstructor() instanceof NumberValueTypeConstructor) {
-                NumberValueTypeConstructor constructor = (NumberValueTypeConstructor) type.getConstructor();
+            if (type.getConstructor() instanceof IntegerValueTypeConstructor) {
+                IntegerValueTypeConstructor constructor = (IntegerValueTypeConstructor) type.getConstructor();
                 JetType primitiveType = TypeUtils.getPrimitiveNumberType(constructor, context.expectedType);
-                updateNumberType(primitiveType, expression, context);
+                updateNumberType(primitiveType, expression, context.trace);
                 return primitiveType;
             }
         }
         return type;
     }
 
-    private <D extends CallableDescriptor> void updateNumberType(
+    public static <D extends CallableDescriptor> void updateNumberType(
             @NotNull JetType numberType,
             @Nullable JetExpression expression,
-            @NotNull ResolutionContext context
+            @NotNull BindingTrace trace
     ) {
         if (expression == null) return;
-        BindingContextUtils.updateRecordedType(numberType, expression, context.trace, false);
+        BindingContextUtils.updateRecordedType(numberType, expression, trace, false);
 
         if (!(expression instanceof JetConstantExpression)) {
             JetExpression deparenthesized = JetPsiUtil.deparenthesize(expression, false);
             if (deparenthesized != expression) {
-                updateNumberType(numberType, deparenthesized, context);
+                updateNumberType(numberType, deparenthesized, trace);
             }
             if (deparenthesized instanceof JetBlockExpression) {
                 JetElement lastStatement = JetPsiUtil.getLastStatementInABlock((JetBlockExpression) deparenthesized);
                 if (lastStatement instanceof JetExpression) {
-                    updateNumberType(numberType, (JetExpression) lastStatement, context);
+                    updateNumberType(numberType, (JetExpression) lastStatement, trace);
                 }
             }
             return;
         }
-        CompileTimeConstant<?> constant =
-                new CompileTimeConstantResolver().getCompileTimeConstant((JetConstantExpression) expression, numberType);
 
-        if (!(constant instanceof ErrorValue)) {
-            context.trace.record(BindingContext.COMPILE_TIME_VALUE, expression, constant);
-        }
+        ConstantExpressionEvaluator.object$.evaluate(expression, trace, numberType);
     }
 }

@@ -49,23 +49,63 @@ import static org.jetbrains.jet.lang.cfg.PseudocodeTraverser.TraversalOrder.FORW
 import static org.jetbrains.jet.lang.cfg.PseudocodeVariablesData.VariableUseState.*;
 import static org.jetbrains.jet.lang.diagnostics.Errors.*;
 import static org.jetbrains.jet.lang.resolve.BindingContext.CAPTURED_IN_CLOSURE;
+import static org.jetbrains.jet.lang.types.TypeUtils.NO_EXPECTED_TYPE;
 import static org.jetbrains.jet.lang.types.TypeUtils.noExpectedType;
 
 public class JetFlowInformationProvider {
 
     private final JetElement subroutine;
     private final Pseudocode pseudocode;
-    private final PseudocodeVariablesData pseudocodeVariablesData;
-    private BindingTrace trace;
+    private final BindingTrace trace;
+    private PseudocodeVariablesData pseudocodeVariablesData;
+
+    private JetFlowInformationProvider(
+            @NotNull JetElement declaration,
+            @NotNull BindingTrace trace,
+            @NotNull Pseudocode pseudocode
+    ) {
+        subroutine = declaration;
+        this.trace = trace;
+        this.pseudocode = pseudocode;
+    }
 
     public JetFlowInformationProvider(
             @NotNull JetElement declaration,
-            @NotNull BindingTrace trace) {
+            @NotNull BindingTrace trace
+    ) {
+        this(declaration, trace, new JetControlFlowProcessor(trace).generatePseudocode(declaration));
+    }
 
-        subroutine = declaration;
-        this.trace = trace;
-        pseudocode = new JetControlFlowProcessor(trace).generatePseudocode(declaration);
-        pseudocodeVariablesData = new PseudocodeVariablesData(pseudocode, trace.getBindingContext());
+    public PseudocodeVariablesData getPseudocodeVariablesData() {
+        if (pseudocodeVariablesData == null) {
+            pseudocodeVariablesData = new PseudocodeVariablesData(pseudocode, trace.getBindingContext());
+        }
+        return pseudocodeVariablesData;
+    }
+
+    public void checkFunction(
+            @NotNull JetDeclarationWithBody function,
+            @NotNull JetType expectedReturnType,
+            boolean isLocalObject
+    ) {
+        boolean isPropertyAccessor = function instanceof JetPropertyAccessor;
+        if (!isPropertyAccessor) {
+            recordInitializedVariables();
+        }
+
+        checkDefiniteReturn(expectedReturnType);
+        checkDefiniteReturnInLocalFunctions();
+
+        if (isLocalObject) return;
+
+        if (!isPropertyAccessor) {
+            // Property accessor is checked through initialization of a class/object or package properties (at 'checkDeclarationContainer')
+            markUninitializedVariables();
+        }
+
+        markUnusedVariables();
+
+        markUnusedLiteralsInBlock();
     }
 
     private void collectReturnExpressions(@NotNull final Collection<JetElement> returnedExpressions) {
@@ -110,6 +150,11 @@ public class JetFlowInformationProvider {
                 }
 
                 @Override
+                public void visitMarkInstruction(MarkInstruction instruction) {
+                    redirectToPrevInstructions(instruction);
+                }
+
+                @Override
                 public void visitInstruction(Instruction instruction) {
                     if (instruction instanceof JetElementInstruction) {
                         JetElementInstruction elementInstruction = (JetElementInstruction) instruction;
@@ -120,6 +165,21 @@ public class JetFlowInformationProvider {
                     }
                 }
             });
+        }
+    }
+
+    private void checkDefiniteReturnInLocalFunctions() {
+        for (LocalFunctionDeclarationInstruction localDeclarationInstruction : pseudocode.getLocalDeclarations()) {
+            JetElement element = localDeclarationInstruction.getElement();
+            if (element instanceof JetNamedFunction) {
+                JetNamedFunction localFunction = (JetNamedFunction) element;
+                SimpleFunctionDescriptor functionDescriptor = trace.getBindingContext().get(BindingContext.FUNCTION, localFunction);
+                JetType expectedType = functionDescriptor != null ? functionDescriptor.getReturnType() : null;
+
+                JetFlowInformationProvider providerForLocalDeclaration =
+                        new JetFlowInformationProvider(localFunction, trace, localDeclarationInstruction.getBody());
+                providerForLocalDeclaration.checkDefiniteReturn(expectedType != null ? expectedType : NO_EXPECTED_TYPE);
+            }
         }
     }
 
@@ -167,7 +227,7 @@ public class JetFlowInformationProvider {
         Collection<JetElement> unreachableElements = Lists.newArrayList();
         for (Instruction deadInstruction : pseudocode.getDeadInstructions()) {
             if (deadInstruction instanceof JetElementInstruction &&
-                !(deadInstruction instanceof ReadUnitValueInstruction)) {
+                !(deadInstruction instanceof LoadUnitValueInstruction)) {
                 unreachableElements.add(((JetElementInstruction) deadInstruction).getElement());
             }
         }
@@ -183,6 +243,7 @@ public class JetFlowInformationProvider {
         final Collection<VariableDescriptor> varWithValReassignErrorGenerated = Sets.newHashSet();
         final boolean processClassOrObject = subroutine instanceof JetClassOrObject;
 
+        PseudocodeVariablesData pseudocodeVariablesData = getPseudocodeVariablesData();
         Map<Instruction, Edges<Map<VariableDescriptor,VariableInitState>>> initializers = pseudocodeVariablesData.getVariableInitializers();
         final Set<VariableDescriptor> declaredVariables = pseudocodeVariablesData.getDeclaredVariables(pseudocode, true);
 
@@ -222,10 +283,11 @@ public class JetFlowInformationProvider {
     }
 
     public void recordInitializedVariables() {
+        PseudocodeVariablesData pseudocodeVariablesData = getPseudocodeVariablesData();
         Pseudocode pseudocode = pseudocodeVariablesData.getPseudocode();
         Map<Instruction, Edges<Map<VariableDescriptor,VariableInitState>>> initializers = pseudocodeVariablesData.getVariableInitializers();
         recordInitializedVariables(pseudocode, initializers);
-        for (LocalDeclarationInstruction instruction : pseudocode.getLocalDeclarations()) {
+        for (LocalFunctionDeclarationInstruction instruction : pseudocode.getLocalDeclarations()) {
             recordInitializedVariables(instruction.getBody(), initializers);
         }
     }
@@ -368,7 +430,6 @@ public class JetFlowInformationProvider {
     private boolean checkBackingField(@NotNull VariableContext cxtx, @NotNull JetElement element) {
         VariableDescriptor variableDescriptor = cxtx.variableDescriptor;
         boolean[] error = new boolean[1];
-        if (isCorrectBackingFieldReference((JetElement) element.getParent(), cxtx, error, false)) return false; // this expression has been already checked
         if (!isCorrectBackingFieldReference(element, cxtx, error, true)) return false;
         if (error[0]) return true;
         if (!(variableDescriptor instanceof PropertyDescriptor)) {
@@ -420,7 +481,7 @@ public class JetFlowInformationProvider {
 
     private void recordInitializedVariables(@NotNull Pseudocode pseudocode, @NotNull Map<Instruction, Edges<Map<VariableDescriptor,PseudocodeVariablesData.VariableInitState>>> initializersMap) {
         Edges<Map<VariableDescriptor, VariableInitState>> initializers = initializersMap.get(pseudocode.getExitInstruction());
-        Set<VariableDescriptor> declaredVariables = pseudocodeVariablesData.getDeclaredVariables(pseudocode, false);
+        Set<VariableDescriptor> declaredVariables = getPseudocodeVariablesData().getDeclaredVariables(pseudocode, false);
         for (VariableDescriptor variable : declaredVariables) {
             if (variable instanceof PropertyDescriptor) {
                 PseudocodeVariablesData.VariableInitState variableInitState = initializers.in.get(variable);
@@ -434,6 +495,7 @@ public class JetFlowInformationProvider {
 //  "Unused variable" & "unused value" analyses
 
     public void markUnusedVariables() {
+        final PseudocodeVariablesData pseudocodeVariablesData = getPseudocodeVariablesData();
         Map<Instruction, Edges<Map<VariableDescriptor, VariableUseState>>> variableStatusData = pseudocodeVariablesData.getVariableUseStatusData();
         final Map<Instruction, DiagnosticFactory> reportedDiagnosticMap = Maps.newHashMap();
         InstructionDataAnalyzeStrategy<Map<VariableDescriptor, VariableUseState>> variableStatusAnalyzeStrategy =
@@ -517,7 +579,6 @@ public class JetFlowInformationProvider {
 //  "Unused literals" in block
 
     public void markUnusedLiteralsInBlock() {
-        assert pseudocode != null;
         final Map<Instruction, DiagnosticFactory> reportedDiagnosticMap = Maps.newHashMap();
         PseudocodeTraverser.traverse(
                 pseudocode, FORWARD, new InstructionAnalyzeStrategy() {

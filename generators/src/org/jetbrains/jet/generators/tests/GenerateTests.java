@@ -33,6 +33,7 @@ import org.jetbrains.jet.completion.*;
 import org.jetbrains.jet.completion.weighers.AbstractCompletionWeigherTest;
 import org.jetbrains.jet.descriptors.serialization.AbstractDescriptorSerializationTest;
 import org.jetbrains.jet.editor.quickDoc.AbstractJetQuickDocProviderTest;
+import org.jetbrains.jet.evaluate.AbstractEvaluateExpressionTest;
 import org.jetbrains.jet.findUsages.AbstractJetFindUsagesTest;
 import org.jetbrains.jet.formatter.AbstractJetFormatterTest;
 import org.jetbrains.jet.generators.tests.generator.SimpleTestClassModel;
@@ -64,6 +65,7 @@ import org.jetbrains.jet.psi.AbstractJetPsiMatcherTest;
 import org.jetbrains.jet.resolve.AbstractResolveBaseTest;
 import org.jetbrains.jet.resolve.AbstractResolveTest;
 import org.jetbrains.jet.resolve.AbstractResolveWithLibTest;
+import org.jetbrains.jet.resolve.annotation.AbstractAnnotationParameterTest;
 import org.jetbrains.jet.safeDelete.AbstractJetSafeDeleteTest;
 
 import java.io.File;
@@ -556,6 +558,21 @@ public class GenerateTests {
                 "RenameTestGenerated",
                 AbstractRenameTest.class,
                 new SingleClassTestModel(new File("idea/testData/refactoring/rename"), Pattern.compile("^(.+)\\.test$"), "doTest")
+        );
+
+        generateTest(
+                "compiler/tests",
+                "AnnotationParameterTestGenerated",
+                AbstractAnnotationParameterTest.class,
+                testModel("compiler/testData/resolveAnnotations/parameters")
+        );
+
+        generateTest(
+                "compiler/tests",
+                "EvaluateExpressionTestGenerated",
+                AbstractEvaluateExpressionTest.class,
+                testModel("compiler/testData/evaluate/constant", "doConstantTest"),
+                testModel("compiler/testData/evaluate/isPure", "doIsPureTest")
         );
     }
 
