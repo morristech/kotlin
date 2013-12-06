@@ -77,6 +77,7 @@ public class CallResolverExtensionProvider {
                 extensions.add(new InlineCallResolverExtension(descriptor));
             }
         }
+        // add your extensions here
         extensions.add(DEFAULT);
     }
 }

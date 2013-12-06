@@ -21,6 +21,7 @@ import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.jet.lang.descriptors.SimpleFunctionDescriptor;
 import org.jetbrains.jet.lang.psi.JetNamedFunction;
 import org.jetbrains.jet.lang.resolve.extension.InlineAnalyzerExtension;
+import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -45,6 +46,9 @@ public class FunctionAnalyzerExtension {
         for (Map.Entry<JetNamedFunction, SimpleFunctionDescriptor> entry : bodiesResolveContext.getFunctions().entrySet()) {
             JetNamedFunction function = entry.getKey();
             SimpleFunctionDescriptor functionDescriptor = entry.getValue();
+
+            if (!bodiesResolveContext.completeAnalysisNeeded(function.getContainingFile())) continue;
+
             List<AnalyzerExtension> extensions = getExtensions(functionDescriptor);
             for (AnalyzerExtension extension : extensions) {
                 extension.process(functionDescriptor, function, trace);

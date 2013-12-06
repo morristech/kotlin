@@ -97,7 +97,8 @@ public class GenerateTests {
                 "JetDiagnosticsTestGenerated",
                 AbstractDiagnosticsTestWithEagerResolve.class,
                 testModel("compiler/testData/diagnostics/tests"),
-                testModel("compiler/testData/diagnostics/tests/script", true, "ktscript", "doTest")
+                testModel("compiler/testData/diagnostics/tests/script", true, "ktscript", "doTest"),
+                testModel("compiler/testData/codegen/box/functions/tailRecursion")
         );
 
         generateTest(

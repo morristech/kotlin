@@ -111,6 +111,8 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
      * we put it into this map to emit access to that variable instead of evaluating the whole expression
      */
     private final Map<JetElement, StackValue.Local> tempVariables = Maps.newHashMap();
+    @NotNull
+    private final TailRecursionCodegen tailRecursionCodegen;
 
     public CalculatedClosure generateObjectLiteral(GenerationState state, JetObjectLiteralExpression literal) {
         JetObjectDeclaration objectDeclaration = literal.getObjectDeclaration();
@@ -180,6 +182,7 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         this.bindingContext = state.getBindingContext();
         this.context = context;
         this.statementVisitor = new CodegenStatementVisitor(this);
+        this.tailRecursionCodegen = new TailRecursionCodegen(context, this, this.v, state);
     }
 
     protected InstructionAdapter createInstructionAdapter(MethodVisitor mv) {
@@ -2142,6 +2145,12 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
 
     private void pushArgumentsAndInvoke(@NotNull ResolvedCall<?> resolvedCall, @NotNull CallableMethod callable) {
         int mask = pushMethodArguments(resolvedCall, callable.getValueParameterTypes());
+
+        if (tailRecursionCodegen.isTailRecursion(resolvedCall)) {
+            tailRecursionCodegen.generateTailRecursion(resolvedCall);
+            return;
+        }
+
         if (mask == 0) {
             callable.invokeWithNotNullAssertion(v, state, resolvedCall);
         }
