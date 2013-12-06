@@ -18,6 +18,7 @@ package org.jetbrains.jet.lang.resolve.calls.autocasts;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
 import org.jetbrains.jet.lang.resolve.calls.context.ResolutionContext;
@@ -116,5 +117,39 @@ public class AutoCastUtils {
                 assert autoCastReceiver.canCast() : "A non-expression receiver must always be autocastabe: " + original;
             }
         }
+    }
+
+    public static void recordAutoCast(@NotNull ReceiverValue receiver, @NotNull BindingTrace trace, @NotNull JetType type) {
+        DataFlowValue dataFlowValue = DataFlowValueFactory.createDataFlowValue(receiver, trace.getBindingContext());
+
+        if (receiver instanceof ExpressionReceiver) {
+            ExpressionReceiver expressionReceiver = (ExpressionReceiver) receiver;
+            //JetType type = expressionReceiver.getType();
+            JetExpression expression = expressionReceiver.getExpression();
+            if (dataFlowValue.isStableIdentifier()) {
+                trace.record(AUTOCAST, expression, type);
+                trace.record(EXPRESSION_TYPE, expression, type);
+            }
+            else {
+                trace.report(AUTOCAST_IMPOSSIBLE.on(expression, type, expression.getText()));
+            }
+        }
+    }
+
+    public static boolean isNotNull(
+            @NotNull ReceiverValue receiver,
+            @NotNull BindingContext bindingContext,
+            @NotNull DataFlowInfo dataFlowInfo
+    ) {
+        if (!receiver.getType().isNullable()) return true;
+
+        //DataFlowValue dataFlowValue = DataFlowValueFactory.createDataFlowValue(receiver, bindingContext);
+        //if (!dataFlowValue.isStableIdentifier()) return false;
+
+        List<ReceiverValue> autoCastVariants = getAutoCastVariants(receiver, bindingContext, dataFlowInfo);
+        for (ReceiverValue autoCastVariant : autoCastVariants) {
+            if (!autoCastVariant.getType().isNullable()) return true;
+        }
+        return false;
     }
 }
