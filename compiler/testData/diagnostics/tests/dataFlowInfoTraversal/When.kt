@@ -5,14 +5,14 @@ fun foo() {
 
     if (x != null) {
         when (x) {
-            0 -> bar(x)
+            0 -> bar(<!DEBUG_INFO_AUTOCAST!>x<!>)
             else -> {}
         }
     }
 
     when (x) {
-        0 -> { if (<!SENSELESS_COMPARISON!>x == null<!>) return }
+        0 -> { if (<!SENSELESS_COMPARISON!><!DEBUG_INFO_AUTOCAST!>x<!> == null<!>) return }
         else -> { if (x == null) return }
     }
-    bar(x)
+    bar(<!DEBUG_INFO_AUTOCAST!>x<!>)
 }
