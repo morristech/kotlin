@@ -39,6 +39,8 @@ import com.intellij.openapi.project.Project
 public abstract class AbstractJavaToKotlinConveterTestForPlugin() : AbstractJavaToKotlinConverterTest("ide.kt", PluginSettings)
 public abstract class AbstractJavaToKotlinConveterTestBasic() : AbstractJavaToKotlinConverterTest("kt", TestSettings)
 
+val FAILED_TEST_DATA_EXTENSION = ".tmp"
+
 public abstract class AbstractJavaToKotlinConverterTest(val kotlinFileExtension: String,
                                                         val settings: ConverterSettings) : LightIdeaTestCase() {
 
@@ -71,7 +73,7 @@ public abstract class AbstractJavaToKotlinConverterTest(val kotlinFileExtension:
                                                 "using the first line of test data file")
         }
 
-        compare(expected, reformat(rawConverted, project), File(kotlinPath + ".tmp"))
+        compare(expected, reformat(rawConverted, project), File(kotlinPath + FAILED_TEST_DATA_EXTENSION))
     }
 
     private fun compare(expected: String, actual: String, tmp: File) {
