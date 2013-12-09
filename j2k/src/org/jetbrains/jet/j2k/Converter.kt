@@ -31,7 +31,6 @@ import com.intellij.psi.CommonClassNames.*
 import org.jetbrains.jet.lang.types.expressions.OperatorConventions.*
 import com.intellij.psi.util.PsiUtil
 import com.intellij.openapi.project.Project
-import com.intellij.psi.javadoc.PsiDocComment
 
 public class Converter(val project: Project, val settings: ConverterSettings) {
 
@@ -99,9 +98,17 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         return members
     }
 
-    private fun getDocComment(element: PsiDocCommentOwner): Comment? {
-        val psiDocComment = element.getDocComment()
-        return if (psiDocComment != null) Comment(psiDocComment.getText()!!) else null
+    private fun getComments(member: PsiMember): MemberComments {
+        var relevantChildren = member.getChildren().toList()
+        if (member is PsiClass) {
+            val leftBraceIndex = relevantChildren.indexOf(member.getLBrace())
+            relevantChildren = relevantChildren.subList(0, leftBraceIndex)
+        }
+        val whiteSpacesAndComments = relevantChildren
+                .toList()
+                .filter { it is PsiWhiteSpace || it is PsiComment }
+                .map { convertElement(it) }
+        return MemberComments(whiteSpacesAndComments)
     }
 
     private fun convertMember(e: PsiElement?, containingClass: PsiClass): Element? = when(e) {
@@ -109,7 +116,6 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         is PsiField -> convertField(e, containingClass)
         is PsiClass -> convertClass(e)
         is PsiClassInitializer -> convertInitializer(e)
-        is PsiDocComment -> null
         else -> convertElement(e)
     }
 
@@ -169,7 +175,8 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
                     }
                 }
             }
-            members.add(Constructor(this, Identifier.Empty, null, Collections.emptySet<Modifier>(),
+            //TODO: comments?
+            members.add(Constructor(this, Identifier.Empty, MemberComments.Empty, Collections.emptySet<Modifier>(),
                                     ClassType(name, Collections.emptyList<Element>(), false, this),
                                     TypeParameterList.Empty,
                                     ParameterList(createParametersFromFields(finalOrWithEmptyInitializer)),
@@ -178,14 +185,14 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         }
 
         if (psiClass.isInterface()) {
-            return Trait(this, name, getDocComment(psiClass), modifiers, typeParameters, extendsTypes, Collections.emptyList<Expression>(), implementsTypes, members)
+            return Trait(this, name, getComments(psiClass), modifiers, typeParameters, extendsTypes, Collections.emptyList<Expression>(), implementsTypes, members)
         }
 
         if (psiClass.isEnum()) {
-            return Enum(this, name, getDocComment(psiClass), modifiers, typeParameters, Collections.emptyList<Type>(), Collections.emptyList<Expression>(), implementsTypes, members)
+            return Enum(this, name, getComments(psiClass), modifiers, typeParameters, Collections.emptyList<Type>(), Collections.emptyList<Expression>(), implementsTypes, members)
         }
 
-        return Class(this, name, getDocComment(psiClass), modifiers, typeParameters, extendsTypes, baseClassParams, implementsTypes, members)
+        return Class(this, name, getComments(psiClass), modifiers, typeParameters, extendsTypes, baseClassParams, implementsTypes, members)
     }
 
     private fun convertInitializer(i: PsiClassInitializer): Initializer {
@@ -200,7 +207,7 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         val modifiers = convertModifierList(field.getModifierList())
         if (field is PsiEnumConstant) {
             return EnumConstant(Identifier(field.getName()!!),
-                                getDocComment(field),
+                                getComments(field),
                                 modifiers,
                                 convertType(field.getType()),
                                 convertElement(field.getArgumentList()))
@@ -212,7 +219,7 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         }
 
         return Field(Identifier(field.getName()!!),
-                     getDocComment(field),
+                     getComments(field),
                      modifiers,
                      kType,
                      convertExpression(field.getInitializer(), field.getType()),
@@ -252,11 +259,11 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         }
 
         if (method.isConstructor()) {
-            return Constructor(this, identifier, getDocComment(method), modifiers, returnType, typeParameterList, params,
+            return Constructor(this, identifier, getComments(method), modifiers, returnType, typeParameterList, params,
                                Block(body.statements), isConstructorPrimary(method))
         }
 
-        return Function(this, identifier, getDocComment(method), modifiers, returnType, typeParameterList, params, body)
+        return Function(this, identifier, getComments(method), modifiers, returnType, typeParameterList, params, body)
     }
 
     private fun createFunctionParameters(method: PsiMethod): ParameterList {
