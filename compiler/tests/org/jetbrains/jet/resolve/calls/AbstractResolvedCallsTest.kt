@@ -63,12 +63,17 @@ public abstract class AbstractResolvedCallsTest() : JetLiteFixture() {
 
         fun checkResolvedCall(resolvedCall: ResolvedCall<out CallableDescriptor?>, element: JetElement) {
             val lineAndColumn = DiagnosticUtils.getLineAndColumnInPsiFile(element.getContainingFile(), element.getTextRange())
-            assertEquals(thisObject, resolvedCall.getThisObject().getText(),
-                         "This object mismatch: ")
-            assertEquals(receiverArgument, resolvedCall.getReceiverArgument().getText(),
-                         "Receiver argument mismatch: ")
-            assertEquals(explicitReceiverKind, resolvedCall.getExplicitReceiverKind(),
-                         "Explicit receiver kind for resolved call for '" + element.getText() + "'" + lineAndColumn + " in not as expected")
+
+            val (actualThisObject, actualReceiverArgument, actualExplicitReceiverKind) = with(resolvedCall) {
+                Triple(getThisObject().getText(), getReceiverArgument().getText(), getExplicitReceiverKind())
+            }
+            val actualDataMessage = "Actual data:\nThis object: $actualThisObject. Receiver argument: $actualReceiverArgument. " +
+                                    "Explicit receiver kind: $actualExplicitReceiverKind.\n"
+
+            assertEquals(thisObject, actualThisObject, "${actualDataMessage}This object mismatch: ")
+            assertEquals(receiverArgument, actualReceiverArgument, "${actualDataMessage}Receiver argument mismatch: ")
+            assertEquals(explicitReceiverKind, actualExplicitReceiverKind, "$actualDataMessage" +
+                         "Explicit receiver kind for resolved call for '${element.getText()}'$lineAndColumn in not as expected")
         }
 
         var callFound = false
