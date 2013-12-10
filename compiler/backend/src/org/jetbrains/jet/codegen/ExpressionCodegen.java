@@ -2000,9 +2000,8 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             }
         }
 
-        fd = accessibleFunctionDescriptor(fd);
+        Callable callable = resolveToCallable(accessibleFunctionDescriptor(fd), superCall);
 
-        Callable callable = resolveToCallable(fd, superCall);
         if (callable instanceof CallableMethod) {
             CallableMethod callableMethod = (CallableMethod) callable;
             Type calleeType = callableMethod.getGenerateCalleeType();
@@ -2010,31 +2009,25 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
                 assert !callableMethod.isNeedsThis() : "Method should have a receiver: " + resolvedCall.getResultingDescriptor();
                 gen(call.getCalleeExpression(), calleeType);
             }
+        }
 
+        //noinspection ConstantConditions
+        Type returnType = typeMapper.mapReturnType(resolvedCall.getResultingDescriptor().getReturnType());
+        if (callable instanceof CallableMethod) {
+            CallableMethod callableMethod = (CallableMethod) callable;
             invokeMethodWithArguments(callableMethod, resolvedCall, receiver);
-
-            Type callReturnType = callableMethod.getSignature().getAsmMethod().getReturnType();
-            if (callReturnType == Type.VOID_TYPE) return StackValue.none();
-
-            JetType type = fd.getReturnType();
-            assert type != null;
-            Type retType = typeMapper.mapReturnType(type);
-            StackValue.coerce(callReturnType, retType, v);
-            return StackValue.onStack(retType);
+            StackValue.coerce(callableMethod.getSignature().getAsmMethod().getReturnType(), returnType, v);
         }
         else {
-            receiver = StackValue.receiver(resolvedCall, receiver, this, null);
-
             List<JetExpression> args = new ArrayList<JetExpression>();
             for (ValueArgument argument : call.getValueArguments()) {
                 args.add(argument.getArgumentExpression());
             }
 
-            Type returnType = typeMapper.mapType(resolvedCall.getResultingDescriptor());
-
             ((IntrinsicMethod) callable).generate(this, v, returnType, call.getCallElement(), args, receiver, state);
-            return StackValue.onStack(returnType);
         }
+
+        return StackValue.onStack(returnType);
     }
 
     @Nullable
