@@ -31,11 +31,11 @@ public class ResolutionCandidate<D extends CallableDescriptor> {
     private final D candidateDescriptor;
     private ReceiverValue thisObject; // receiver object of a method
     private ReceiverValue receiverArgument; // receiver of an extension function
-    private ExplicitReceiverKind explicitReceiverKind;
+    private ReceiverKind explicitReceiverKind;
     private Boolean isSafeCall;
 
     private ResolutionCandidate(@NotNull D descriptor, @NotNull ReceiverValue thisObject, @NotNull ReceiverValue receiverArgument,
-            @NotNull ExplicitReceiverKind explicitReceiverKind, @Nullable Boolean isSafeCall) {
+            @NotNull ReceiverKind explicitReceiverKind, @Nullable Boolean isSafeCall) {
         this.candidateDescriptor = descriptor;
         this.thisObject = thisObject;
         this.receiverArgument = receiverArgument;
@@ -44,16 +44,16 @@ public class ResolutionCandidate<D extends CallableDescriptor> {
     }
 
     /*package*/ static <D extends CallableDescriptor> ResolutionCandidate<D> create(@NotNull D descriptor) {
-        return new ResolutionCandidate<D>(descriptor, NO_RECEIVER, NO_RECEIVER, ExplicitReceiverKind.NO_EXPLICIT_RECEIVER, null);
+        return new ResolutionCandidate<D>(descriptor, NO_RECEIVER, NO_RECEIVER, ReceiverKind.NO_EXPLICIT_RECEIVER, null);
     }
 
     /* 'null' for isSafeCall parameter if it should be set later (with 'setSafeCall') */
     public static <D extends CallableDescriptor> ResolutionCandidate<D> create(@NotNull D descriptor, @Nullable Boolean isSafeCall) {
-        return new ResolutionCandidate<D>(descriptor, NO_RECEIVER, NO_RECEIVER, ExplicitReceiverKind.NO_EXPLICIT_RECEIVER, isSafeCall);
+        return new ResolutionCandidate<D>(descriptor, NO_RECEIVER, NO_RECEIVER, ReceiverKind.NO_EXPLICIT_RECEIVER, isSafeCall);
     }
 
     public static <D extends CallableDescriptor> ResolutionCandidate<D> create(@NotNull D descriptor, @NotNull ReceiverValue thisObject,
-            @NotNull ReceiverValue receiverArgument, @NotNull ExplicitReceiverKind explicitReceiverKind, boolean isSafeCall) {
+            @NotNull ReceiverValue receiverArgument, @NotNull ReceiverKind explicitReceiverKind, boolean isSafeCall) {
         return new ResolutionCandidate<D>(descriptor, thisObject, receiverArgument, explicitReceiverKind, isSafeCall);
     }
 
@@ -65,7 +65,7 @@ public class ResolutionCandidate<D extends CallableDescriptor> {
         this.receiverArgument = receiverArgument;
     }
 
-    public void setExplicitReceiverKind(@NotNull ExplicitReceiverKind explicitReceiverKind) {
+    public void setExplicitReceiverKind(@NotNull ReceiverKind explicitReceiverKind) {
         this.explicitReceiverKind = explicitReceiverKind;
     }
 
@@ -85,7 +85,7 @@ public class ResolutionCandidate<D extends CallableDescriptor> {
     }
 
     @NotNull
-    public ExplicitReceiverKind getExplicitReceiverKind() {
+    public ReceiverKind getExplicitReceiverKind() {
         return explicitReceiverKind;
     }
 

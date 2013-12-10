@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
 import org.jetbrains.jet.lang.descriptors.TypeParameterDescriptor;
 import org.jetbrains.jet.lang.descriptors.ValueParameterDescriptor;
-import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.jet.lang.types.JetType;
 
@@ -60,7 +60,7 @@ public abstract class DelegatingResolvedCall<D extends CallableDescriptor> imple
 
     @NotNull
     @Override
-    public ExplicitReceiverKind getExplicitReceiverKind() {
+    public ReceiverKind getExplicitReceiverKind() {
         return resolvedCall.getExplicitReceiverKind();
     }
 

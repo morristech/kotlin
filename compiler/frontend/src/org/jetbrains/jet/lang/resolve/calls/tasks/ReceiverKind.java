@@ -16,7 +16,7 @@
 
 package org.jetbrains.jet.lang.resolve.calls.tasks;
 
-public enum ExplicitReceiverKind {
+public enum ReceiverKind {
     RECEIVER_ARGUMENT,
     THIS_OBJECT,
     NO_EXPLICIT_RECEIVER,

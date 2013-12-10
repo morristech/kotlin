@@ -30,7 +30,7 @@ import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.AnalyzerScriptParameter;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
-import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind;
 import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.AbstractReceiverValue;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver;
@@ -58,7 +58,7 @@ public abstract class AbstractResolvedCallsTest extends JetLiteFixture {
         String thisObject = directives.get("THIS_OBJECT");
         String receiverArgument = directives.get("RECEIVER_ARGUMENT");
 
-        ExplicitReceiverKind explicitReceiverKind = getExplicitReceiverKind(directives);
+        ReceiverKind explicitReceiverKind = getExplicitReceiverKind(directives);
 
         JetFile psiFile = JetTestUtils.loadJetFile(getProject(), file);
         AnalyzeExhaust analyzeExhaust = AnalyzerFacadeForJVM
@@ -86,7 +86,7 @@ public abstract class AbstractResolvedCallsTest extends JetLiteFixture {
             @NotNull JetElement element,
             @NotNull String thisObject,
             @NotNull String receiverArgument,
-            @NotNull ExplicitReceiverKind explicitReceiverKind
+            @NotNull ReceiverKind explicitReceiverKind
     ) {
         DiagnosticUtils.LineAndColumn lineAndColumn =
                 DiagnosticUtils.getLineAndColumnInPsiFile(element.getContainingFile(), element.getTextRange());
@@ -109,16 +109,16 @@ public abstract class AbstractResolvedCallsTest extends JetLiteFixture {
         return receiverValue.toString();
     }
 
-    private static ExplicitReceiverKind getExplicitReceiverKind(Map<String, String> directives) {
+    private static ReceiverKind getExplicitReceiverKind(Map<String, String> directives) {
         String explicitReceiverKind = directives.get(EXPLICIT_RECEIVER_KIND_DIRECTIVE);
         assert explicitReceiverKind != null : EXPLICIT_RECEIVER_KIND_DIRECTIVE + " should be present.";
         try {
-            return ExplicitReceiverKind.valueOf(explicitReceiverKind);
+            return ReceiverKind.valueOf(explicitReceiverKind);
         }
         catch (Exception e) {
             StringBuilder message = new StringBuilder();
             message.append(EXPLICIT_RECEIVER_KIND_DIRECTIVE).append(" must be one of the following: ");
-            for (ExplicitReceiverKind kind : ExplicitReceiverKind.values()) {
+            for (ReceiverKind kind : ReceiverKind.values()) {
                 message.append(kind).append(", ");
             }
             message.append("\nnot ").append(explicitReceiverKind).append(".");

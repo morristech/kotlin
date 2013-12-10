@@ -41,7 +41,6 @@ import org.jetbrains.jet.lang.resolve.calls.util.ExpressionAsFunctionDescriptor;
 import org.jetbrains.jet.lang.resolve.calls.util.JetFakeReference;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.resolve.scopes.JetScope;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.expressions.ExpressionTypingServices;
 import org.jetbrains.jet.lang.types.expressions.ExpressionTypingUtils;
@@ -62,7 +61,6 @@ import static org.jetbrains.jet.lang.resolve.BindingContext.RESOLUTION_SCOPE;
 import static org.jetbrains.jet.lang.resolve.calls.CallResolverUtil.ResolveArgumentsMode.RESOLVE_FUNCTION_ARGUMENTS;
 import static org.jetbrains.jet.lang.resolve.calls.CallResolverUtil.ResolveArgumentsMode.SHAPE_FUNCTION_ARGUMENTS;
 import static org.jetbrains.jet.lang.resolve.calls.results.OverloadResolutionResults.Code.*;
-import static org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue.NO_RECEIVER;
 import static org.jetbrains.jet.lang.types.TypeUtils.NO_EXPECTED_TYPE;
 
 @SuppressWarnings("RedundantTypeArguments")
@@ -248,7 +246,7 @@ public class CallResolver {
                                                                   Visibilities.LOCAL);
                 ResolutionCandidate<CallableDescriptor> resolutionCandidate = ResolutionCandidate.<CallableDescriptor>create(functionDescriptor, JetPsiUtil.isSafeCall(context.call));
                 resolutionCandidate.setReceiverArgument(context.call.getExplicitReceiver());
-                resolutionCandidate.setExplicitReceiverKind(ExplicitReceiverKind.RECEIVER_ARGUMENT);
+                resolutionCandidate.setExplicitReceiverKind(ReceiverKind.RECEIVER_ARGUMENT);
 
                 // strictly speaking, this is a hack:
                 // we need to pass a reference, but there's no reference in the PSI,

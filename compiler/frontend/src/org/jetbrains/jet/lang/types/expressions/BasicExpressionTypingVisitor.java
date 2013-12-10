@@ -43,7 +43,7 @@ import org.jetbrains.jet.lang.resolve.calls.model.*;
 import org.jetbrains.jet.lang.resolve.calls.results.OverloadResolutionResults;
 import org.jetbrains.jet.lang.resolve.calls.results.OverloadResolutionResultsImpl;
 import org.jetbrains.jet.lang.resolve.calls.results.OverloadResolutionResultsUtil;
-import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind;
 import org.jetbrains.jet.lang.resolve.calls.tasks.ResolutionCandidate;
 import org.jetbrains.jet.lang.resolve.calls.tasks.TracingStrategy;
 import org.jetbrains.jet.lang.resolve.calls.util.CallMaker;
@@ -420,7 +420,7 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
                 ResolutionCandidate.create(descriptor,
                                            NO_RECEIVER,
                                            NO_RECEIVER,
-                                           ExplicitReceiverKind.NO_EXPLICIT_RECEIVER,
+                                           ReceiverKind.NO_EXPLICIT_RECEIVER,
                                            false);
 
         Call call = CallMaker.makeCall(expression, NO_RECEIVER, null, expression, Collections.<ValueArgument>emptyList());

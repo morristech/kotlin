@@ -17,12 +17,12 @@
 package org.jetbrains.jet.lang.descriptors;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind;
 
-import static org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind.*;
+import static org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind.*;
 
 public class CallableDescriptorUtil {
-    public static ExplicitReceiverKind getExpectedReceiverKind(@NotNull CallableDescriptor descriptor) {
+    public static ReceiverKind getExpectedReceiverKind(@NotNull CallableDescriptor descriptor) {
         ReceiverParameterDescriptor receiverParameter = descriptor.getReceiverParameter();
         ReceiverParameterDescriptor expectedThisObject = descriptor.getExpectedThisObject();
         if (receiverParameter != null) {

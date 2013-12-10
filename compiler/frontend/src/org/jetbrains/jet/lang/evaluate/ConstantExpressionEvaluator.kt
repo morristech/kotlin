@@ -29,7 +29,7 @@ import org.jetbrains.jet.lang.types.expressions.OperatorConventions
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns
 import org.jetbrains.jet.lexer.JetTokens
 import org.jetbrains.jet.lang.resolve.BindingContext.COMPILE_TIME_INITIALIZER
-import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind
 import org.jetbrains.jet.lang.types.TypeUtils
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedValueArgument
 import org.jetbrains.jet.JetNodeTypes
@@ -587,10 +587,10 @@ private fun getIntegerValue(value: Long, expectedType: JetType): CompileTimeCons
 
 private fun getReceiverExpressionType(resolvedCall: ResolvedCall<*>): JetType? {
     return when (resolvedCall.getExplicitReceiverKind()) {
-        ExplicitReceiverKind.THIS_OBJECT -> resolvedCall.getThisObject().getType()
-        ExplicitReceiverKind.RECEIVER_ARGUMENT -> resolvedCall.getReceiverArgument().getType()
-        ExplicitReceiverKind.NO_EXPLICIT_RECEIVER -> null
-        ExplicitReceiverKind.BOTH_RECEIVERS -> null
+        ReceiverKind.THIS_OBJECT -> resolvedCall.getThisObject().getType()
+        ReceiverKind.RECEIVER_ARGUMENT -> resolvedCall.getReceiverArgument().getType()
+        ReceiverKind.NO_EXPLICIT_RECEIVER -> null
+        ReceiverKind.BOTH_RECEIVERS -> null
         else -> null
     }
 }

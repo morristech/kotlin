@@ -26,7 +26,7 @@ import org.jetbrains.jet.lang.resolve.TemporaryBindingTrace;
 import org.jetbrains.jet.lang.resolve.calls.model.MutableDataFlowInfoForArguments;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCallImpl;
-import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind;
 import org.jetbrains.jet.lang.resolve.calls.tasks.ResolutionCandidate;
 import org.jetbrains.jet.lang.resolve.calls.tasks.TracingStrategy;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
@@ -110,7 +110,7 @@ public final class CallBuilder {
             assert descriptor != null;
             resolvedCall = ResolvedCallImpl.create(ResolutionCandidate.create(descriptor, safeGetValue(descriptor.getExpectedThisObject()),
                                                                               safeGetValue(descriptor.getReceiverParameter()),
-                                                                              ExplicitReceiverKind.THIS_OBJECT, false),
+                                                                              ReceiverKind.THIS_OBJECT, false),
                                                    TemporaryBindingTrace.create(new BindingTraceContext(), "trace to resolve call (in js)"),
                                                    TracingStrategy.EMPTY,
                                                    MutableDataFlowInfoForArguments.WITHOUT_ARGUMENTS_CHECK);

@@ -16,7 +16,7 @@
 
 package org.jetbrains.jet.lang.resolve.calls.tasks;
 
-import static org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind.*;
+import static org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind.*;
 
 public class ReceiverKindBuilder {
     private static final ReceiverKindBuilder INVOKE_EXPLICIT = new ReceiverKindBuilder(true, true);
@@ -42,17 +42,17 @@ public class ReceiverKindBuilder {
         this.isExplicit = isExplicit;
     }
 
-    private ExplicitReceiverKind getKind(ExplicitReceiverKind kind) {
+    private ReceiverKind getKind(ReceiverKind kind) {
         if (!isInvoke && !isExplicit) return NO_EXPLICIT_RECEIVER;
         if (isInvoke && isExplicit) return BOTH_RECEIVERS;
         return kind;
     }
 
-    public ExplicitReceiverKind asThisObject() {
+    public ReceiverKind asThisObject() {
         return getKind(THIS_OBJECT);
     }
 
-    public ExplicitReceiverKind asReceiverArgument() {
+    public ReceiverKind asReceiverArgument() {
         return getKind(RECEIVER_ARGUMENT);
     }
 

@@ -36,7 +36,7 @@ import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCallWithTrace;
 import org.jetbrains.jet.lang.resolve.calls.model.VariableAsFunctionResolvedCall;
 import org.jetbrains.jet.lang.resolve.calls.results.OverloadResolutionResults;
 import org.jetbrains.jet.lang.resolve.calls.results.OverloadResolutionResultsImpl;
-import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind;
 import org.jetbrains.jet.lang.resolve.calls.tasks.ResolutionCandidate;
 import org.jetbrains.jet.lang.resolve.calls.tasks.ResolutionTask;
 import org.jetbrains.jet.lang.resolve.calls.util.DelegatingCall;
@@ -114,7 +114,7 @@ public class CallTransformer<D extends CallableDescriptor, F extends D> {
                     candidate, variableCall, candidateTrace, task);
 
             ResolutionCandidate<CallableDescriptor> candidateWithoutReceiver = ResolutionCandidate.create(
-                    candidate.getDescriptor(), candidate.getThisObject(), ReceiverValue.NO_RECEIVER, ExplicitReceiverKind.NO_EXPLICIT_RECEIVER, false);
+                    candidate.getDescriptor(), candidate.getThisObject(), ReceiverValue.NO_RECEIVER, ReceiverKind.NO_EXPLICIT_RECEIVER, false);
 
             CallCandidateResolutionContext<CallableDescriptor> contextWithoutReceiver = createContextWithChainedTrace(
                     candidateWithoutReceiver, variableCallWithoutReceiver, candidateTrace, task);

@@ -48,7 +48,7 @@ import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.calls.autocasts.AutoCastReceiver;
 import org.jetbrains.jet.lang.resolve.calls.model.*;
-import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind;
 import org.jetbrains.jet.lang.resolve.calls.util.CallMaker;
 import org.jetbrains.jet.lang.resolve.calls.util.ExpressionAsFunctionDescriptor;
 import org.jetbrains.jet.lang.resolve.constants.CompileTimeConstant;
@@ -76,7 +76,7 @@ import static org.jetbrains.jet.codegen.FunctionTypesUtil.getFunctionImplType;
 import static org.jetbrains.jet.codegen.binding.CodegenBinding.*;
 import static org.jetbrains.jet.lang.resolve.BindingContext.*;
 import static org.jetbrains.jet.lang.resolve.BindingContextUtils.getNotNull;
-import static org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind.*;
+import static org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind.*;
 import static org.jetbrains.jet.lang.resolve.java.AsmTypeConstants.*;
 import static org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue.NO_RECEIVER;
 
@@ -2501,7 +2501,7 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             JetCallExpression fakeExpression = constructFakeFunctionCall(referencedFunction);
             final List<? extends ValueArgument> fakeArguments = fakeExpression.getValueArguments();
 
-            final ExplicitReceiverKind receiverKind = CallableDescriptorUtil.getExpectedReceiverKind(resolvedCall.getCandidateDescriptor());
+            final ReceiverKind receiverKind = CallableDescriptorUtil.getExpectedReceiverKind(resolvedCall.getCandidateDescriptor());
             final ReceiverValue receiverValue = computeAndSaveReceiver(signature, codegen, receiverKind);
             computeAndSaveArguments(codegen.myFrameMap, fakeArguments, codegen);
 
@@ -2581,9 +2581,9 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
 
         @NotNull
         private ReceiverValue computeAndSaveReceiver(
-                @NotNull JvmMethodSignature signature, 
+                @NotNull JvmMethodSignature signature,
                 @NotNull ExpressionCodegen codegen,
-                @NotNull ExplicitReceiverKind receiverKind
+                @NotNull ReceiverKind receiverKind
         ) {
             if (receiverKind == NO_EXPLICIT_RECEIVER) return NO_RECEIVER;
 

@@ -45,7 +45,7 @@ import java.util.List;
 
 import static org.jetbrains.jet.lang.resolve.DescriptorUtils.isClassObject;
 import static org.jetbrains.jet.lang.resolve.calls.CallResolverUtil.isOrOverridesSynthesized;
-import static org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind.*;
+import static org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind.*;
 import static org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKindBuilder.buildKind;
 import static org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue.NO_RECEIVER;
 
@@ -272,7 +272,7 @@ public class TaskPrioritizer {
             @NotNull Collection<? extends D> descriptors,
             @NotNull Iterable<ReceiverValue> thisObjects,
             @NotNull Iterable<ReceiverValue> receiverParameters,
-            @NotNull ExplicitReceiverKind explicitReceiverKind
+            @NotNull ReceiverKind explicitReceiverKind
     ) {
         Collection<ResolutionCandidate<D>> result = Lists.newArrayList();
         convertWithReceivers(descriptors, thisObjects, receiverParameters, result, explicitReceiverKind);
@@ -284,7 +284,7 @@ public class TaskPrioritizer {
             @NotNull Iterable<ReceiverValue> thisObjects,
             @NotNull Iterable<ReceiverValue> receiverParameters,
             @NotNull Collection<ResolutionCandidate<D>> result,
-            @NotNull ExplicitReceiverKind explicitReceiverKind
+            @NotNull ReceiverKind explicitReceiverKind
     ) {
         for (ReceiverValue thisObject : thisObjects) {
             for (ReceiverValue receiverParameter : receiverParameters) {

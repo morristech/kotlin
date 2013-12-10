@@ -30,7 +30,7 @@ import org.jetbrains.jet.lang.resolve.calls.CallResolverUtil;
 import org.jetbrains.jet.lang.resolve.calls.autocasts.DataFlowInfo;
 import org.jetbrains.jet.lang.resolve.calls.inference.ConstraintSystem;
 import org.jetbrains.jet.lang.resolve.calls.results.ResolutionStatus;
-import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind;
 import org.jetbrains.jet.lang.resolve.calls.tasks.ResolutionCandidate;
 import org.jetbrains.jet.lang.resolve.calls.tasks.TracingStrategy;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
@@ -73,7 +73,7 @@ public class ResolvedCallImpl<D extends CallableDescriptor> implements ResolvedC
     private D resultingDescriptor; // Probably substituted
     private final ReceiverValue thisObject; // receiver object of a method
     private final ReceiverValue receiverArgument; // receiver of an extension function
-    private final ExplicitReceiverKind explicitReceiverKind;
+    private final ReceiverKind explicitReceiverKind;
     private final boolean isSafeCall;
 
     private final Map<TypeParameterDescriptor, JetType> typeArguments = Maps.newLinkedHashMap();
@@ -219,7 +219,7 @@ public class ResolvedCallImpl<D extends CallableDescriptor> implements ResolvedC
 
     @Override
     @NotNull
-    public ExplicitReceiverKind getExplicitReceiverKind() {
+    public ReceiverKind getExplicitReceiverKind() {
         return explicitReceiverKind;
     }
 
