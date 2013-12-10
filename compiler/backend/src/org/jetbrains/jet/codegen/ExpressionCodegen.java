@@ -48,6 +48,7 @@ import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.calls.autocasts.AutoCastReceiver;
 import org.jetbrains.jet.lang.resolve.calls.model.*;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
 import org.jetbrains.jet.lang.resolve.calls.util.CallMaker;
 import org.jetbrains.jet.lang.resolve.calls.util.ExpressionAsFunctionDescriptor;
 import org.jetbrains.jet.lang.resolve.constants.CompileTimeConstant;
@@ -75,8 +76,7 @@ import static org.jetbrains.jet.codegen.FunctionTypesUtil.getFunctionImplType;
 import static org.jetbrains.jet.codegen.binding.CodegenBinding.*;
 import static org.jetbrains.jet.lang.resolve.BindingContext.*;
 import static org.jetbrains.jet.lang.resolve.BindingContextUtils.getNotNull;
-import static org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind.RECEIVER_ARGUMENT;
-import static org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind.THIS_OBJECT;
+import static org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind.*;
 import static org.jetbrains.jet.lang.resolve.java.AsmTypeConstants.*;
 import static org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue.NO_RECEIVER;
 
@@ -2501,20 +2501,21 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             JetCallExpression fakeExpression = constructFakeFunctionCall(referencedFunction);
             final List<? extends ValueArgument> fakeArguments = fakeExpression.getValueArguments();
 
-            final ReceiverValue receiverValue = computeAndSaveReceiver(signature, codegen);
+            final ExplicitReceiverKind receiverKind = CallableDescriptorUtil.getExpectedReceiverKind(resolvedCall.getCandidateDescriptor());
+            final ReceiverValue receiverValue = computeAndSaveReceiver(signature, codegen, receiverKind);
             computeAndSaveArguments(codegen.myFrameMap, fakeArguments, codegen);
 
             ResolvedCall<CallableDescriptor> fakeResolvedCall = new DelegatingResolvedCall<CallableDescriptor>(resolvedCall) {
                 @NotNull
                 @Override
                 public ReceiverValue getReceiverArgument() {
-                    return resolvedCall.getExplicitReceiverKind() == RECEIVER_ARGUMENT ? receiverValue : NO_RECEIVER;
+                    return receiverKind.isReceiver() ? receiverValue : NO_RECEIVER;
                 }
 
                 @NotNull
                 @Override
                 public ReceiverValue getThisObject() {
-                    return resolvedCall.getExplicitReceiverKind() == THIS_OBJECT ? receiverValue : NO_RECEIVER;
+                    return receiverKind.isThisObject() ? receiverValue : NO_RECEIVER;
                 }
 
                 @NotNull
@@ -2579,19 +2580,22 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         }
 
         @NotNull
-        private ReceiverValue computeAndSaveReceiver(@NotNull JvmMethodSignature signature, @NotNull ExpressionCodegen codegen) {
+        private ReceiverValue computeAndSaveReceiver(
+                @NotNull JvmMethodSignature signature, 
+                @NotNull ExpressionCodegen codegen,
+                @NotNull ExplicitReceiverKind receiverKind
+        ) {
+            if (receiverKind == NO_EXPLICIT_RECEIVER) return NO_RECEIVER;
+
             CallableDescriptor referencedFunction = resolvedCall.getCandidateDescriptor();
 
-            ReceiverParameterDescriptor receiverParameter = referencedFunction.getReceiverParameter();
-            ReceiverParameterDescriptor expectedThisObject = referencedFunction.getExpectedThisObject();
-            assert receiverParameter == null || expectedThisObject == null :
+            assert receiverKind != BOTH_RECEIVERS :
                     "Extensions in classes can't be referenced via callable reference expressions: " + referencedFunction;
 
-            ReceiverParameterDescriptor receiver = receiverParameter != null ? receiverParameter : expectedThisObject;
-
-            if (receiver == null) {
-                return NO_RECEIVER;
-            }
+            ReceiverParameterDescriptor receiver = receiverKind.isReceiver()
+                                                   ? referencedFunction.getReceiverParameter()
+                                                   : referencedFunction.getExpectedThisObject();
+            if (receiver == null) return NO_RECEIVER;
 
             JetExpression receiverExpression = JetPsiFactory.createExpression(state.getProject(), "callableReferenceFakeReceiver");
 
