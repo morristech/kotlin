@@ -14,46 +14,36 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.lang.resolve.calls.tasks;
+package org.jetbrains.jet.lang.resolve.calls.tasks.receiverKind;
 
-import static org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind.*;
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind.*;
+import org.jetbrains.jet.lang.resolve.calls.tasks.receiverKind.ReceiverKindBuilderImpl.*;
 
-public class ReceiverKindBuilder {
-    private static final ReceiverKindBuilder INVOKE_EXPLICIT = new ReceiverKindBuilder(true, true);
-    private static final ReceiverKindBuilder INVOKE_IMPLICIT = new ReceiverKindBuilder(true, false);
-    private static final ReceiverKindBuilder NOT_INVOKE_EXPLICIT = new ReceiverKindBuilder(false, true);
-    private static final ReceiverKindBuilder NOT_INVOKE_IMPLICIT = new ReceiverKindBuilder(false, false);
-
-    public static ReceiverKindBuilder buildKind(boolean isInvoke, boolean isExplicit) {
-        if (isInvoke) {
-            if (isExplicit) return INVOKE_EXPLICIT;
-            return INVOKE_IMPLICIT;
-        }
-        if (isExplicit) return NOT_INVOKE_EXPLICIT;
-        return NOT_INVOKE_IMPLICIT;
-
-    }
-
-    private final boolean isInvoke;
-    private final boolean isExplicit;
-
-    private ReceiverKindBuilder(boolean isInvoke, boolean isExplicit) {
-        this.isInvoke = isInvoke;
-        this.isExplicit = isExplicit;
-    }
-
-    private ReceiverKind getKind(ReceiverKind kind) {
-        if (!isInvoke && !isExplicit) return NO_EXPLICIT_RECEIVER;
-        if (isInvoke && isExplicit) return BOTH_RECEIVERS;
-        return kind;
-    }
-
-    public ReceiverKind asThisObject() {
-        return getKind(THIS_OBJECT);
-    }
-
-    public ReceiverKind asReceiverArgument() {
-        return getKind(RECEIVER_ARGUMENT);
-    }
-
+public trait ReceiverKindBuilder {
+    public fun asThisObject(): ReceiverKind
+    public fun asReceiverArgument(): ReceiverKind
 }
+
+private enum class ReceiverKindBuilderImpl private(val isInvoke: Boolean, val isExplicit: Boolean) : ReceiverKindBuilder {
+    INVOKE_EXPLICIT : ReceiverKindBuilderImpl(true, true)
+    INVOKE_IMPLICIT : ReceiverKindBuilderImpl(true, false)
+    NOT_INVOKE_EXPLICIT : ReceiverKindBuilderImpl(false, true)
+    NOT_INVOKE_IMPLICIT : ReceiverKindBuilderImpl(false, false)
+
+    private fun getKind(kind: ReceiverKind): ReceiverKind {
+        if (!isInvoke && !isExplicit) return NO_EXPLICIT_RECEIVER
+        if (isInvoke && isExplicit) return BOTH_RECEIVERS
+        return kind
+    }
+    override fun asThisObject() = getKind(THIS_OBJECT)
+    override fun asReceiverArgument() = getKind(RECEIVER_ARGUMENT)
+}
+
+public fun buildKind(isInvoke: Boolean, isExplicit: Boolean): ReceiverKindBuilder =
+        when (Pair(isInvoke, isExplicit)) {
+            Pair(true, true) -> INVOKE_EXPLICIT
+            Pair(true, false) -> INVOKE_IMPLICIT
+            Pair(false, true) -> NOT_INVOKE_EXPLICIT
+            else -> NOT_INVOKE_IMPLICIT
+        }
