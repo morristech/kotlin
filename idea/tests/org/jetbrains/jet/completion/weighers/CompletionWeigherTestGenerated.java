@@ -16,12 +16,15 @@
 
 package org.jetbrains.jet.completion.weighers;
 
+import com.intellij.codeInsight.completion.CompletionType;
 import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import java.io.File;
 import java.util.regex.Pattern;
+
+import org.jetbrains.jet.InTextDirectivesUtils;
 import org.jetbrains.jet.JetTestUtils;
 import org.jetbrains.jet.test.InnerTestClasses;
 import org.jetbrains.jet.test.TestMetadata;
@@ -39,6 +42,11 @@ public class CompletionWeigherTestGenerated extends AbstractCompletionWeigherTes
     @TestMetadata("DeprecatedFun.kt")
     public void testDeprecatedFun() throws Exception {
         doTest("idea/testData/completion/weighers/DeprecatedFun.kt");
+    }
+    
+    @TestMetadata("ExactMatchForKeyword.kt")
+    public void testExactMatchForKeyword() throws Exception {
+        doTest("idea/testData/completion/weighers/ExactMatchForKeyword.kt");
     }
     
     @TestMetadata("KeywordsLast.kt")
@@ -75,5 +83,4 @@ public class CompletionWeigherTestGenerated extends AbstractCompletionWeigherTes
     public void testPropertiesBeforeKeywords() throws Exception {
         doTest("idea/testData/completion/weighers/PropertiesBeforeKeywords.kt");
     }
-    
 }

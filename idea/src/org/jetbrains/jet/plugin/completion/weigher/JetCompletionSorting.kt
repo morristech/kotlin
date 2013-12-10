@@ -24,12 +24,12 @@ import org.jetbrains.jet.lang.psi.JetFile
 public fun CompletionResultSet.addJetSorting(parameters : CompletionParameters) : CompletionResultSet {
     var sorter = CompletionSorter.defaultSorter(parameters, getPrefixMatcher())!!
 
-    sorter = sorter.weighBefore("stats", JetKindWeigher())
-
     sorter = sorter.weighAfter(
             "stats",
             JetDeclarationRemotenessWeigher(parameters.getOriginalFile() as JetFile),
             JetAccessibleWeigher())
+
+    sorter = sorter.weighAfter("prefix", JetKindWeigher())
 
     return withRelevanceSorter(sorter)
 }
