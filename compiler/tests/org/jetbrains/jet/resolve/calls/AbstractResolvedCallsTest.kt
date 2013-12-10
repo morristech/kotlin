@@ -14,115 +14,98 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.resolve.calls;
+package org.jetbrains.jet.resolve.calls
 
-import com.google.common.collect.ImmutableMap;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.ConfigurationKind;
-import org.jetbrains.jet.JetLiteFixture;
-import org.jetbrains.jet.JetTestUtils;
-import org.jetbrains.jet.analyzer.AnalyzeExhaust;
-import org.jetbrains.jet.cli.jvm.compiler.JetCoreEnvironment;
-import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
-import org.jetbrains.jet.lang.diagnostics.DiagnosticUtils;
-import org.jetbrains.jet.lang.psi.JetElement;
-import org.jetbrains.jet.lang.psi.JetFile;
-import org.jetbrains.jet.lang.resolve.AnalyzerScriptParameter;
-import org.jetbrains.jet.lang.resolve.BindingContext;
-import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
-import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind;
-import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.AbstractReceiverValue;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
+import com.google.common.collect.ImmutableMap
+import org.jetbrains.annotations.NotNull
+import org.jetbrains.jet.ConfigurationKind
+import org.jetbrains.jet.JetLiteFixture
+import org.jetbrains.jet.JetTestUtils
+import org.jetbrains.jet.analyzer.AnalyzeExhaust
+import org.jetbrains.jet.cli.jvm.compiler.JetCoreEnvironment
+import org.jetbrains.jet.lang.descriptors.CallableDescriptor
+import org.jetbrains.jet.lang.diagnostics.DiagnosticUtils
+import org.jetbrains.jet.lang.psi.JetElement
+import org.jetbrains.jet.lang.psi.JetFile
+import org.jetbrains.jet.lang.resolve.AnalyzerScriptParameter
+import org.jetbrains.jet.lang.resolve.BindingContext
+import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall
+import org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind
+import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM
+import org.jetbrains.jet.lang.resolve.scopes.receivers.AbstractReceiverValue
+import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver
+import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
+import java.io.File
+import java.util.Collections
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-public abstract class AbstractResolvedCallsTest extends JetLiteFixture {
-    private static final String EXPLICIT_RECEIVER_KIND_DIRECTIVE = "EXPLICIT_RECEIVER_KIND";
+public abstract class AbstractResolvedCallsTest() : JetLiteFixture() {
+    override fun createEnvironment(): JetCoreEnvironment = createEnvironmentWithMockJdk(ConfigurationKind.JDK_ONLY)
 
+    public fun doTest(filePath: String) {
+        val file = File(filePath)
+        val text = JetTestUtils.doLoadFile(file)
+        val directives = JetTestUtils.parseDirectives(text)
 
-    @Override
-    protected JetCoreEnvironment createEnvironment() {
-        return createEnvironmentWithMockJdk(ConfigurationKind.JDK_ONLY);
-    }
+        val (callName, thisObject, receiverArgument) = with (directives) {
+            Triple(get("CALL"), get("THIS_OBJECT"), get("RECEIVER_ARGUMENT"))
+        }
+        val explicitReceiverKind = directives.getExplicitReceiverKind()
 
-    public void doTest(String filePath) throws Exception {
-        File file = new File(filePath);
-        String text = JetTestUtils.doLoadFile(file);
+        fun analyzeFileAndGetResolvedCallEntries(): Map<JetElement, ResolvedCall<out CallableDescriptor?>> {
+            val psiFile = JetTestUtils.loadJetFile(getProject(), file)
+            val analyzeExhaust = AnalyzerFacadeForJVM.analyzeOneFileWithJavaIntegration(psiFile, Collections.emptyList())
+            val bindingContext = analyzeExhaust!!.getBindingContext()
+            return bindingContext.getSliceContents(BindingContext.RESOLVED_CALL)
+        }
 
-        Map<String, String> directives = JetTestUtils.parseDirectives(text);
-        String callName = directives.get("CALL");
-        String thisObject = directives.get("THIS_OBJECT");
-        String receiverArgument = directives.get("RECEIVER_ARGUMENT");
+        fun checkResolvedCall(resolvedCall: ResolvedCall<out CallableDescriptor?>, element: JetElement) {
+            val lineAndColumn = DiagnosticUtils.getLineAndColumnInPsiFile(element.getContainingFile(), element.getTextRange())
+            assertEquals(thisObject, resolvedCall.getThisObject().getText(),
+                         "This object mismatch: ")
+            assertEquals(receiverArgument, resolvedCall.getReceiverArgument().getText(),
+                         "Receiver argument mismatch: ")
+            assertEquals(explicitReceiverKind, resolvedCall.getExplicitReceiverKind(),
+                         "Explicit receiver kind for resolved call for '" + element.getText() + "'" + lineAndColumn + " in not as expected")
+        }
 
-        ReceiverKind explicitReceiverKind = getExplicitReceiverKind(directives);
-
-        JetFile psiFile = JetTestUtils.loadJetFile(getProject(), file);
-        AnalyzeExhaust analyzeExhaust = AnalyzerFacadeForJVM
-                .analyzeOneFileWithJavaIntegration(psiFile, Collections.<AnalyzerScriptParameter>emptyList());
-
-        BindingContext bindingContext = analyzeExhaust.getBindingContext();
-
-        ImmutableMap<JetElement, ResolvedCall<? extends CallableDescriptor>> resolvedCallsEntries =
-                bindingContext.getSliceContents(BindingContext.RESOLVED_CALL);
-        boolean callFound = false;
-        for (Map.Entry<JetElement, ResolvedCall<? extends CallableDescriptor>> entry : resolvedCallsEntries.entrySet()) {
-            JetElement element = entry.getKey();
+        var callFound = false
+        for ((element, resolvedCall) in analyzeFileAndGetResolvedCallEntries()) {
             if (callName.equals(element.getText())) {
-                callFound = true;
-
-                ResolvedCall<? extends CallableDescriptor> resolvedCall = entry.getValue();
-                checkResolvedCall(resolvedCall, element, thisObject, receiverArgument, explicitReceiverKind);
+                callFound = true
+                checkResolvedCall(resolvedCall, element)
             }
         }
-        assertTrue("Resolved call for " + callName + " was not found.", callFound);
+        assertTrue(callFound, "Resolved call for $callName was not found.")
     }
+}
 
-    private static void checkResolvedCall(
-            @NotNull ResolvedCall<? extends CallableDescriptor> resolvedCall,
-            @NotNull JetElement element,
-            @NotNull String thisObject,
-            @NotNull String receiverArgument,
-            @NotNull ReceiverKind explicitReceiverKind
-    ) {
-        DiagnosticUtils.LineAndColumn lineAndColumn =
-                DiagnosticUtils.getLineAndColumnInPsiFile(element.getContainingFile(), element.getTextRange());
+private fun ReceiverValue.getText() =
+        if (this is ExpressionReceiver) {
+            this.getExpression().getText()
+        }
+        else if (this is AbstractReceiverValue) {
+            this.getType().toString()
+        }
+        else toString()
 
-        assertEquals("This object mismatch: ", thisObject, getReceiverText(resolvedCall.getThisObject()));
-        assertEquals("Receiver argument mismatch: ", receiverArgument, getReceiverText(resolvedCall.getReceiverArgument()));
-
-        assertEquals(
-                "Explicit receiver kind for resolved call for '" + element.getText() + "'" + lineAndColumn + " in not as expected",
-                explicitReceiverKind, resolvedCall.getExplicitReceiverKind());
+private val EXPLICIT_RECEIVER_KIND_DIRECTIVE: String = "EXPLICIT_RECEIVER_KIND"
+private fun Map<String, String>.getExplicitReceiverKind(): ReceiverKind {
+    val explicitReceiverKind = get(EXPLICIT_RECEIVER_KIND_DIRECTIVE)
+    assert(explicitReceiverKind != null) { "$EXPLICIT_RECEIVER_KIND_DIRECTIVE should be present." }
+    try
+    {
+        return ReceiverKind.valueOf(explicitReceiverKind!!)
     }
-
-    private static String getReceiverText(ReceiverValue receiverValue) {
-        if (receiverValue instanceof ExpressionReceiver) {
-            return ((ExpressionReceiver) receiverValue).getExpression().getText();
+    catch (e: IllegalArgumentException) {
+        val message = StringBuilder()
+        message.append("$EXPLICIT_RECEIVER_KIND_DIRECTIVE must be one of the following: ")
+        for (kind in ReceiverKind.values()) {
+            message.append("$kind, ")
         }
-        if (receiverValue instanceof AbstractReceiverValue) {
-            return receiverValue.getType().toString();
-        }
-        return receiverValue.toString();
-    }
-
-    private static ReceiverKind getExplicitReceiverKind(Map<String, String> directives) {
-        String explicitReceiverKind = directives.get(EXPLICIT_RECEIVER_KIND_DIRECTIVE);
-        assert explicitReceiverKind != null : EXPLICIT_RECEIVER_KIND_DIRECTIVE + " should be present.";
-        try {
-            return ReceiverKind.valueOf(explicitReceiverKind);
-        }
-        catch (Exception e) {
-            StringBuilder message = new StringBuilder();
-            message.append(EXPLICIT_RECEIVER_KIND_DIRECTIVE).append(" must be one of the following: ");
-            for (ReceiverKind kind : ReceiverKind.values()) {
-                message.append(kind).append(", ");
-            }
-            message.append("\nnot ").append(explicitReceiverKind).append(".");
-            throw new AssertionError(message);
-        }
+        message.append("\nnot $explicitReceiverKind.")
+        throw AssertionError(message)
     }
 }
