@@ -42,6 +42,16 @@ class JetKindWeigher extends LookupElementWeigher {
     @NotNull
     @Override
     public MyResult weigh(@NotNull LookupElement element) {
+        int iSmall = 12;
+        int iSofe = 134;
+        int iHF = 122;
+        String iFinal = "String";
+        String ifFinal = "String";
+        String isFinal = "String";
+        String iMor = "Some";
+        int iSomeOther = 44566;
+        int iComeAndGet = 44566;
+
         Object object = element.getObject();
         if (object instanceof JetLookupObject) {
             JetLookupObject lookupObject = (JetLookupObject) object;

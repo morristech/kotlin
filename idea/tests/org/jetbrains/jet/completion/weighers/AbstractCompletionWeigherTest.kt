@@ -23,6 +23,10 @@ import org.jetbrains.jet.plugin.PluginTestCaseBase
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase
 import org.testng.Assert
 import com.intellij.openapi.util.io.FileUtil
+import java.io.BufferedReader
+import java.io.StringReader
+import java.util.ArrayList
+import org.jetbrains.jet.testing.trimIndent
 
 public abstract class AbstractCompletionWeigherTest() : LightCodeInsightFixtureTestCase() {
     fun doTest(path: String) {
@@ -47,6 +51,39 @@ public abstract class AbstractCompletionWeigherTest() : LightCodeInsightFixtureT
 
         fixture.complete(CompletionType.BASIC, InTextDirectivesUtils.getPrefixedInt(text, "// INVOCATION_COUNT:") ?: 1)
         fixture.assertPreferredCompletionItems(InTextDirectivesUtils.getPrefixedInt(text, "// SELECTED:") ?: 0, *items)
+    }
+
+    public open fun testJava() : Unit {
+        val fixture = myFixture!!
+
+        fixture.configureByText("Test.java",
+                """
+                class Test {
+                    void some(int isFoo) {
+                        int isFooVar = 12;
+
+                        int iSmall = 12;
+                        int iSofe = 134;
+                        int iHF = 122;
+                        String iFinal = "String";
+                        String ifFinal = "String";
+                        String isFinal = "String";
+                        String iMor = "Some";
+                        int iSomeOther = 44566;
+                        int iComeAndGet = 44566;
+
+                        if<caret>
+                    }
+                }
+
+                // ORDER: isFoo, if, ifFooVar""".trimIndent()
+        )
+
+        val text = fixture.getEditor()!!.getDocument().getText()
+        val prefixes = InTextDirectivesUtils.findArrayWithPrefixes(text, "// ORDER:")
+        Assert.assertTrue(prefixes.size != 0)
+        fixture.complete(CompletionType.BASIC, 1)
+        fixture.assertPreferredCompletionItems(0, *prefixes)
     }
 
     protected override fun getTestDataPath() : String? {
