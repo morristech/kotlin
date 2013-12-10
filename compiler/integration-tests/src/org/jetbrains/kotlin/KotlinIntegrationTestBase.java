@@ -31,6 +31,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.util.ArrayUtil;
+import com.intellij.util.SmartList;
 import jet.Function1;
 import kotlin.KotlinPackage;
 import org.intellij.lang.annotations.Language;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
@@ -57,6 +59,7 @@ public abstract class KotlinIntegrationTestBase {
 
     @Rule
     public final Tmpdir tmpdir = new Tmpdir();
+    private List<AssertionError> errors = new SmartList<AssertionError>();
 
     @Rule
     public TestRule watchman = new TestWatcher() {
@@ -128,6 +131,16 @@ public abstract class KotlinIntegrationTestBase {
     }
 
     protected void check(String baseName, String content) throws IOException {
+        if (!errors.isEmpty()) {
+            for (AssertionError error : errors) {
+                System.out.println("Message: " + error.getMessage());
+                System.out.println();
+                error.printStackTrace();
+                System.out.println("-----------------\n");
+            }
+            fail();
+        }
+
         File actualFile = new File(testDataDir, baseName + ".actual");
         File expectedFile = new File(testDataDir, baseName + ".expected");
 
@@ -157,7 +170,7 @@ public abstract class KotlinIntegrationTestBase {
         final StringBuilder errContent = new StringBuilder();
 
         handler.addProcessListener(new ProcessAdapter() {
-            private int i = -1;
+            private int i = 0;
 
             @Override
             public void onTextAvailable(ProcessEvent event, Key outputType) {
@@ -165,13 +178,20 @@ public abstract class KotlinIntegrationTestBase {
                     System.out.print(event.getText());
                 }
                 else if (outputType == ProcessOutputTypes.STDOUT) {
-                    String text = "OUT " + StringUtil.trimTrailing(normalizeOutput(event.getText()));
-                    if (!text.equals(expected[++i])) {
-                        StringBuilder sb = new StringBuilder();
-                        for (byte b : text.getBytes()) {
-                            sb.append(b).append(",");
-                        }
-                        throw  new RuntimeException("i = " + i + ",\nevent.text = " + text + ", bytes = [" +  sb + "],\nexpected = " + expected[i]);
+                    String text = event.getText();
+                    String normalizedText = StringUtil.trimTrailing(normalizeOutput(text));
+                    String textWithOut = "OUT " + normalizedText;
+                    if (!textWithOut.equals(expected[i])) {
+                        errors.add(new AssertionError(
+                                "i = " + i + ",\n" +
+                                "event.text = " + text + ", bytes = [" + asBytes(text) + "],\n" +
+                                "normalizedText = " + normalizedText + ", bytes = [" + asBytes(normalizedText) + "],\n" +
+                                "textWithOut = " + textWithOut + ", bytes = [" + asBytes(textWithOut) + "],\n" +
+                                "expected = " + expected[i] + ", bytes = [" + asBytes(expected[i]) + "]"));
+
+                    }
+                    else {
+                        i++;
                     }
 
                     appendToContent(outContent, "OUT ", event.getText());
@@ -179,6 +199,21 @@ public abstract class KotlinIntegrationTestBase {
                 else if (outputType == ProcessOutputTypes.STDERR) {
                     appendToContent(errContent, "ERR ", event.getText());
                 }
+            }
+
+            private String asBytes(String textWithOut) {
+                StringBuilder sb = new StringBuilder();
+                boolean first = true;
+                for (byte b : textWithOut.getBytes()) {
+                    if (first) {
+                        first = false;
+                    }
+                    else {
+                        sb.append(",");
+                    }
+                    sb.append(b);
+                }
+                return sb.toString();
             }
 
             private synchronized void appendToContent(StringBuilder content, String prefix, String line) {
