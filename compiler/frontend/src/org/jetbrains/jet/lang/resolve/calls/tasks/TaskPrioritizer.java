@@ -329,23 +329,6 @@ public class TaskPrioritizer {
                 }
             }
         }
-        if (receiverParameters.size() == 1 && !receiverParameters.iterator().next().exists()) {
-            for (D descriptor : descriptors) {
-                if (descriptor.getExpectedThisObject() != null && descriptor.getReceiverParameter() == null) {
-                    DeclarationDescriptor containingDeclaration = descriptor.getContainingDeclaration();
-                    if (descriptor instanceof ConstructorDescriptor) {
-                        containingDeclaration = containingDeclaration.getContainingDeclaration();
-                    }
-                    if (containingDeclaration != null && isClassObject(containingDeclaration)) {
-                        ResolutionCandidate<D> candidate = ResolutionCandidate.create(descriptor);
-                        candidate.setThisObject(((ClassDescriptor) containingDeclaration).getThisAsReceiverParameter().getValue());
-                        //todo
-                        candidate.setExplicitReceiverKind(THIS_OBJECT);
-                        result.add(candidate);
-                    }
-                }
-            }
-        }
         return result;
     }
 
