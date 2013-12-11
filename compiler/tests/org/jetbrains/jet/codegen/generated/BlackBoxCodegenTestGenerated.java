@@ -4792,6 +4792,11 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("compiler/testData/codegen/box/unit"), Pattern.compile("^(.+)\\.kt$"), true);
         }
         
+        @TestMetadata("kt3634.kt")
+        public void testKt3634() throws Exception {
+            doTest("compiler/testData/codegen/box/unit/kt3634.kt");
+        }
+        
         @TestMetadata("kt4212.kt")
         public void testKt4212() throws Exception {
             doTest("compiler/testData/codegen/box/unit/kt4212.kt");
@@ -4805,6 +4810,16 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
         @TestMetadata("nullableUnit.kt")
         public void testNullableUnit() throws Exception {
             doTest("compiler/testData/codegen/box/unit/nullableUnit.kt");
+        }
+        
+        @TestMetadata("nullableUnitInWhen1.kt")
+        public void testNullableUnitInWhen1() throws Exception {
+            doTest("compiler/testData/codegen/box/unit/nullableUnitInWhen1.kt");
+        }
+        
+        @TestMetadata("nullableUnitInWhen2.kt")
+        public void testNullableUnitInWhen2() throws Exception {
+            doTest("compiler/testData/codegen/box/unit/nullableUnitInWhen2.kt");
         }
         
         @TestMetadata("unitClassObject.kt")
