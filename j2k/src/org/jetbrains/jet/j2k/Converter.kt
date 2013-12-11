@@ -86,9 +86,6 @@ public class Converter(val project: Project, val settings: ConverterSettings) {
         val members = ArrayList<Element>()
         val allChildren = psiClass.getChildren().toList()
         for (e in allChildren.subList(allChildren.indexOf(psiClass.getLBrace()), allChildren.size)) {
-            if (psiClass is PsiAnonymousClass && psiClass.getBaseClassReference() == e) {
-               continue
-            }
             val converted = convertMember(e, psiClass)
             if (converted != null) members.add(converted)
         }
