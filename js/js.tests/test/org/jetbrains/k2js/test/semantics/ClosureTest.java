@@ -51,4 +51,8 @@ public final class ClosureTest extends SingleFileTranslationTest {
     public void testWrappedVariableInExtensionFun() throws Exception {
         fooBoxTest();
     }
+
+    public void testCrash() throws Exception {
+        checkFooBoxIsOk();
+    }
 }
