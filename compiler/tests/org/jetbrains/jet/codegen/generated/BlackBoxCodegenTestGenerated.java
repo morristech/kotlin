@@ -645,6 +645,11 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
             doTest("compiler/testData/codegen/box/callableReference/innerConstructorFromTopLevelOneStringArg.kt");
         }
         
+        @TestMetadata("local.kt")
+        public void testLocal() throws Exception {
+            doTest("compiler/testData/codegen/box/callableReference/local.kt");
+        }
+        
         @TestMetadata("nestedConstructorFromClass.kt")
         public void testNestedConstructorFromClass() throws Exception {
             doTest("compiler/testData/codegen/box/callableReference/nestedConstructorFromClass.kt");

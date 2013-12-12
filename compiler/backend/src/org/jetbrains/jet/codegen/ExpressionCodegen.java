@@ -2011,6 +2011,16 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             }
         }
 
+        return invokeFunctionWithCalleeOnStack(call, receiver, resolvedCall, callable);
+    }
+
+    @NotNull
+    private StackValue invokeFunctionWithCalleeOnStack(
+            @NotNull Call call,
+            @NotNull StackValue receiver,
+            @NotNull ResolvedCall<? extends CallableDescriptor> resolvedCall,
+            @NotNull Callable callable
+    ) {
         //noinspection ConstantConditions
         Type returnType = typeMapper.mapReturnType(resolvedCall.getResultingDescriptor().getReturnType());
         if (callable instanceof CallableMethod) {
@@ -2506,7 +2516,8 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             }
             else {
                 Call call = CallMaker.makeCall(fakeExpression, NO_RECEIVER, null, fakeExpression, fakeArguments);
-                result = codegen.invokeFunction(call, StackValue.none(), fakeResolvedCall);
+                Callable callable = codegen.resolveToCallable(codegen.accessibleFunctionDescriptor(referencedFunction), false /*TODO*/);
+                result = codegen.invokeFunctionWithCalleeOnStack(call, StackValue.none(), fakeResolvedCall, callable);
             }
 
             InstructionAdapter v = codegen.v;
