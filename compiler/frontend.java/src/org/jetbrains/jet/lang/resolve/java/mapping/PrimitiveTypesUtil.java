@@ -26,6 +26,7 @@ public class PrimitiveTypesUtil {
     private PrimitiveTypesUtil() {
     }
 
+    @NotNull
     public static Type asmTypeForPrimitive(@NotNull JvmPrimitiveType jvmPrimitiveType) {
         switch (jvmPrimitiveType) {
             case BOOLEAN: return BOOLEAN_TYPE;
@@ -37,6 +38,21 @@ public class PrimitiveTypesUtil {
             case LONG: return LONG_TYPE;
             case DOUBLE: return DOUBLE_TYPE;
             default: throw new IllegalStateException("Unknown primitive type: " + jvmPrimitiveType);
+        }
+    }
+
+    @NotNull
+    public static JvmPrimitiveType primitiveTypeForAsmType(@NotNull Type asmType) {
+        switch (asmType.getSort()) {
+            case BOOLEAN: return JvmPrimitiveType.BOOLEAN;
+            case CHAR: return JvmPrimitiveType.CHAR;
+            case BYTE: return JvmPrimitiveType.BYTE;
+            case SHORT: return JvmPrimitiveType.SHORT;
+            case INT: return JvmPrimitiveType.INT;
+            case FLOAT: return JvmPrimitiveType.FLOAT;
+            case LONG: return JvmPrimitiveType.LONG;
+            case DOUBLE: return JvmPrimitiveType.DOUBLE;
+            default: throw new IllegalStateException("Type is not primitive: " + asmType);
         }
     }
 }

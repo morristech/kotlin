@@ -25,6 +25,7 @@ import org.jetbrains.jet.codegen.StackValue;
 import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
+import org.jetbrains.jet.lang.resolve.java.mapping.PrimitiveTypesUtil;
 
 import java.util.List;
 
@@ -39,35 +40,8 @@ public class IteratorNext implements IntrinsicMethod {
             StackValue receiver,
             @NotNull GenerationState state
     ) {
-        String name;
-        if (returnType == Type.CHAR_TYPE) {
-            name = "Char";
-        }
-        else if (returnType == Type.BOOLEAN_TYPE) {
-            name = "Boolean";
-        }
-        else if (returnType == Type.BYTE_TYPE) {
-            name = "Byte";
-        }
-        else if (returnType == Type.SHORT_TYPE) {
-            name = "Short";
-        }
-        else if (returnType == Type.INT_TYPE) {
-            name = "Int";
-        }
-        else if (returnType == Type.LONG_TYPE) {
-            name = "Long";
-        }
-        else if (returnType == Type.FLOAT_TYPE) {
-            name = "Float";
-        }
-        else if (returnType == Type.DOUBLE_TYPE) {
-            name = "Double";
-        }
-        else {
-            throw new UnsupportedOperationException();
-        }
         receiver.put(AsmTypeConstants.OBJECT_TYPE, v);
-        v.invokevirtual("jet/" + name + "Iterator", "next" + name, "()" + returnType.getDescriptor());
+        String name = PrimitiveTypesUtil.primitiveTypeForAsmType(returnType).getPrimitiveType().getTypeName().asString();
+        v.invokevirtual("jet/" + name + "Iterator", "next" + name, "()" + returnType);
     }
 }
