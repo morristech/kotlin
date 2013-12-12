@@ -138,7 +138,6 @@ public abstract class KotlinIntegrationTestBase {
                 error.printStackTrace();
                 System.out.println("-----------------\n");
             }
-            fail();
         }
 
         File actualFile = new File(testDataDir, baseName + ".actual");
