@@ -31,7 +31,7 @@ import static org.jetbrains.jet.codegen.AsmUtil.genToString;
 
 public class ToString implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -41,6 +41,5 @@ public class ToString implements IntrinsicMethod {
             @NotNull GenerationState state
     ) {
         genToString(v, receiver, receiver.type).put(returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

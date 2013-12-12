@@ -34,7 +34,7 @@ import static org.jetbrains.jet.lang.resolve.java.AsmTypeConstants.OBJECT_TYPE;
 
 public class IdentityEquals implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -54,6 +54,5 @@ public class IdentityEquals implements IntrinsicMethod {
             codegen.gen(e.getRight()).put(OBJECT_TYPE, v);
         }
         StackValue.cmp(JetTokens.EQEQEQ, OBJECT_TYPE).put(returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

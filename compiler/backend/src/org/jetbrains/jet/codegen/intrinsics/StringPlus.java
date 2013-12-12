@@ -32,7 +32,7 @@ import static org.jetbrains.jet.lang.resolve.java.AsmTypeConstants.OBJECT_TYPE;
 
 public class StringPlus implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -50,8 +50,6 @@ public class StringPlus implements IntrinsicMethod {
             codegen.gen(arguments.get(0)).put(OBJECT_TYPE, v);
         }
         v.invokestatic("jet/runtime/Intrinsics", "stringPlus", "(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/String;");
-
         StackValue.coerce(JAVA_STRING_TYPE, returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

@@ -34,7 +34,7 @@ import static org.jetbrains.jet.lang.resolve.java.AsmTypeConstants.getType;
 
 public class JavaClassProperty implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -53,6 +53,5 @@ public class JavaClassProperty implements IntrinsicMethod {
         }
 
         StackValue.coerce(getType(Class.class), returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

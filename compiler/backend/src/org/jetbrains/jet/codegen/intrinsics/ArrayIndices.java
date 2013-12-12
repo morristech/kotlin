@@ -31,7 +31,7 @@ import static org.jetbrains.jet.lang.resolve.java.AsmTypeConstants.JET_INT_RANGE
 
 public class ArrayIndices implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -44,6 +44,5 @@ public class ArrayIndices implements IntrinsicMethod {
         v.arraylength();
         v.invokestatic("jet/runtime/Ranges", "arrayIndices", "(I)Ljet/IntRange;");
         StackValue.coerce(JET_INT_RANGE_TYPE, returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

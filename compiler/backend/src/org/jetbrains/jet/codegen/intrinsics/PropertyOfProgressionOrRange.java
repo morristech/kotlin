@@ -43,7 +43,7 @@ public class PropertyOfProgressionOrRange implements IntrinsicMethod {
     }
 
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -59,6 +59,5 @@ public class PropertyOfProgressionOrRange implements IntrinsicMethod {
         receiver.put(receiver.type, v);
         v.invokevirtual(ownerInternalName, getterName, "()" + boxedType.getDescriptor());
         StackValue.coerce(boxedType, returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

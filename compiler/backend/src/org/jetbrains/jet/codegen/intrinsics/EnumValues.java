@@ -35,7 +35,7 @@ import java.util.List;
 
 public class EnumValues implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen, InstructionAdapter v, @NotNull Type expectedType, @Nullable PsiElement element,
             @Nullable List<JetExpression> arguments, StackValue receiver, @NotNull GenerationState state
     ) {
@@ -48,7 +48,6 @@ public class EnumValues implements IntrinsicMethod {
         assert returnType != null;
         Type type = state.getTypeMapper().mapType(returnType);
         v.invokestatic(type.getElementType().getInternalName(), "values", "()" + type);
-        StackValue.onStack(type).put(expectedType, v);
-        return StackValue.onStack(expectedType);
+        StackValue.coerce(type, expectedType, v);
     }
 }

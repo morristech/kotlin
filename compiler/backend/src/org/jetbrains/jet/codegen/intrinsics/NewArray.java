@@ -30,7 +30,7 @@ import java.util.List;
 
 public class NewArray implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -40,6 +40,5 @@ public class NewArray implements IntrinsicMethod {
             @NotNull GenerationState state
     ) {
         codegen.generateNewArray((JetCallExpression) element);
-        return StackValue.onStack(returnType);
     }
 }

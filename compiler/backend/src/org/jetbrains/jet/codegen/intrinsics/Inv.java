@@ -28,11 +28,10 @@ import org.jetbrains.jet.lang.psi.JetExpression;
 import java.util.List;
 
 import static org.jetbrains.jet.codegen.AsmUtil.numberFunctionOperandType;
-import static org.jetbrains.jet.codegen.AsmUtil.unboxType;
 
 public class Inv implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -52,6 +51,5 @@ public class Inv implements IntrinsicMethod {
             v.iconst(-1);
         }
         v.xor(returnType);
-        return StackValue.onStack(returnType);
     }
 }

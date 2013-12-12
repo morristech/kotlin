@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.asm4.Type;
 import org.jetbrains.asm4.commons.InstructionAdapter;
-import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
 import org.jetbrains.jet.codegen.ExpressionCodegen;
 import org.jetbrains.jet.codegen.StackValue;
 import org.jetbrains.jet.codegen.state.GenerationState;
@@ -30,13 +29,14 @@ import org.jetbrains.jet.lang.psi.JetCallExpression;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
+import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
 import org.jetbrains.jet.lang.types.JetType;
 
 import java.util.List;
 
 public class EnumValueOf implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen, InstructionAdapter v, @NotNull Type expectedType, @Nullable PsiElement element,
             @Nullable List<JetExpression> arguments, StackValue receiver, @NotNull GenerationState state
     ) {
@@ -51,7 +51,6 @@ public class EnumValueOf implements IntrinsicMethod {
         assert arguments != null;
         codegen.gen(arguments.get(0), AsmTypeConstants.JAVA_STRING_TYPE);
         v.invokestatic(type.getInternalName(), "valueOf", "(Ljava/lang/String;)" + type.getDescriptor());
-        StackValue.onStack(type).put(expectedType, v);
-        return StackValue.onStack(expectedType);
+        StackValue.coerce(type, expectedType, v);
     }
 }

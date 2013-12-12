@@ -30,7 +30,6 @@ import org.jetbrains.jet.lang.psi.JetReferenceExpression;
 import java.util.List;
 
 import static org.jetbrains.jet.codegen.AsmUtil.genIncrement;
-import static org.jetbrains.jet.codegen.AsmUtil.unboxType;
 
 public class Increment implements IntrinsicMethod {
     private final int myDelta;
@@ -40,7 +39,7 @@ public class Increment implements IntrinsicMethod {
     }
 
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -61,7 +60,7 @@ public class Increment implements IntrinsicMethod {
                 int index = codegen.indexOfLocal((JetReferenceExpression) operand);
                 if (index >= 0) {
                     StackValue.preIncrement(index, myDelta).put(returnType, v);
-                    return StackValue.onStack(returnType);
+                    return;
                 }
             }
             StackValue value = codegen.genQualified(receiver, operand);
@@ -77,6 +76,5 @@ public class Increment implements IntrinsicMethod {
             receiver.put(returnType, v);
             genIncrement(returnType, myDelta, v);
         }
-        return StackValue.onStack(returnType);
     }
 }

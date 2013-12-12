@@ -449,12 +449,13 @@ public class AsmUtil {
         v.add(expectedType);
     }
 
-    public static Type genNegate(Type expectedType, InstructionAdapter v) {
+    public static void genNegate(@NotNull Type expectedType, @NotNull InstructionAdapter v) {
         if (expectedType == Type.BYTE_TYPE || expectedType == Type.SHORT_TYPE || expectedType == Type.CHAR_TYPE) {
-            expectedType = Type.INT_TYPE;
+            v.neg(Type.INT_TYPE);
         }
-        v.neg(expectedType);
-        return expectedType;
+        else {
+            v.neg(expectedType);
+        }
     }
 
     public static void swap(InstructionAdapter v, Type stackTop, Type afterTop) {

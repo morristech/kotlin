@@ -28,11 +28,9 @@ import org.jetbrains.jet.lang.psi.JetExpression;
 
 import java.util.List;
 
-import static org.jetbrains.jet.codegen.AsmUtil.unboxType;
-
 public class UnaryPlus implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -51,6 +49,5 @@ public class UnaryPlus implements IntrinsicMethod {
             assert arguments != null;
             codegen.gen(arguments.get(0), returnType);
         }
-        return StackValue.onStack(returnType);
     }
 }

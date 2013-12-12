@@ -42,7 +42,7 @@ import static org.jetbrains.jet.lang.resolve.java.mapping.PrimitiveTypesUtil.asm
 
 public class ArrayIterator implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -60,7 +60,7 @@ public class ArrayIterator implements IntrinsicMethod {
         if (containingDeclaration.equals(KotlinBuiltIns.getInstance().getArray())) {
             v.invokestatic("jet/runtime/ArrayIterator", "iterator", "([Ljava/lang/Object;)Ljava/util/Iterator;");
             StackValue.coerce(JET_ITERATOR_TYPE, returnType, v);
-            return StackValue.onStack(returnType);
+            return;
         }
 
         for (JvmPrimitiveType jvmPrimitiveType : JvmPrimitiveType.values()) {
@@ -71,7 +71,7 @@ public class ArrayIterator implements IntrinsicMethod {
                 String methodSignature = "([" + asmTypeForPrimitive(jvmPrimitiveType) + ")" + iteratorDesc;
                 v.invokestatic("jet/runtime/ArrayIterator", "iterator", methodSignature);
                 StackValue.coerce(Type.getType(iteratorDesc), returnType, v);
-                return StackValue.onStack(returnType);
+                return;
             }
         }
 

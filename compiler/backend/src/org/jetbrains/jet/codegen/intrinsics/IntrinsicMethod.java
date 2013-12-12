@@ -30,8 +30,6 @@ import org.jetbrains.jet.lang.psi.JetExpression;
 import java.util.List;
 
 public interface IntrinsicMethod extends Callable {
-    StackValue generate(
-            ExpressionCodegen codegen, InstructionAdapter v, @NotNull Type returnType, @Nullable PsiElement element,
-            @Nullable List<JetExpression> arguments, @Nullable StackValue receiver, @NotNull GenerationState state
-    );
+    void generate(ExpressionCodegen codegen, InstructionAdapter v, @NotNull Type returnType, @Nullable PsiElement element,
+            @Nullable List<JetExpression> arguments, @Nullable StackValue receiver, @NotNull GenerationState state);
 }

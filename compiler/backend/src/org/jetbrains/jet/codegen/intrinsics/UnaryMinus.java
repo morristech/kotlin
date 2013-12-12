@@ -29,11 +29,10 @@ import java.util.List;
 
 import static org.jetbrains.jet.codegen.AsmUtil.genNegate;
 import static org.jetbrains.jet.codegen.AsmUtil.numberFunctionOperandType;
-import static org.jetbrains.jet.codegen.AsmUtil.unboxType;
 
 public class UnaryMinus implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -53,6 +52,6 @@ public class UnaryMinus implements IntrinsicMethod {
         else {
             receiver.put(operandType, v);
         }
-        return StackValue.onStack(genNegate(returnType, v));
+        genNegate(returnType, v);
     }
 }

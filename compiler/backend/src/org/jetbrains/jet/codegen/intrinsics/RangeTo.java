@@ -30,7 +30,7 @@ import java.util.List;
 
 public class RangeTo implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -56,7 +56,5 @@ public class RangeTo implements IntrinsicMethod {
             v.invokestatic("jet/runtime/Ranges", "rangeTo",
                            "(" + leftType.getDescriptor() + rightType.getDescriptor() + ")" + returnType.getDescriptor());
         }
-
-        return StackValue.onStack(returnType);
     }
 }

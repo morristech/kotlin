@@ -29,7 +29,7 @@ import java.util.List;
 
 public class Not implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -47,6 +47,5 @@ public class Not implements IntrinsicMethod {
         }
         stackValue.put(Type.BOOLEAN_TYPE, v);
         StackValue.not(StackValue.onStack(Type.BOOLEAN_TYPE)).put(returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

@@ -35,14 +35,13 @@ public class StaticField implements IntrinsicMethod {
     private final FqName ownerClass;
     private final Name propertyName;
 
-
     public StaticField(FqName ownerClass, Name propertyName) {
         this.ownerClass = ownerClass;
         this.propertyName = propertyName;
     }
 
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -52,6 +51,5 @@ public class StaticField implements IntrinsicMethod {
             @NotNull GenerationState state
     ) {
         v.getstatic(JvmClassName.byFqNameWithoutInnerClasses(ownerClass).getInternalName(), propertyName.asString(), returnType.getDescriptor());
-        return StackValue.onStack(returnType);
     }
 }

@@ -30,10 +30,11 @@ import java.util.List;
 
 import static org.jetbrains.jet.codegen.AsmUtil.genInvokeAppendMethod;
 import static org.jetbrains.jet.codegen.AsmUtil.genStringBuilderConstructor;
+import static org.jetbrains.jet.lang.resolve.java.AsmTypeConstants.JAVA_STRING_TYPE;
 
 public class Concat implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -56,7 +57,6 @@ public class Concat implements IntrinsicMethod {
         }
 
         v.invokevirtual("java/lang/StringBuilder", "toString", "()Ljava/lang/String;");
-        StackValue.onStack(AsmTypeConstants.JAVA_STRING_TYPE).put(returnType, v);
-        return StackValue.onStack(returnType);
+        StackValue.coerce(JAVA_STRING_TYPE, returnType, v);
     }
 }

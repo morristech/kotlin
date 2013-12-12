@@ -20,7 +20,6 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.asm4.Type;
 import org.jetbrains.asm4.commons.InstructionAdapter;
-import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
 import org.jetbrains.jet.codegen.ExpressionCodegen;
 import org.jetbrains.jet.codegen.StackValue;
 import org.jetbrains.jet.codegen.state.GenerationState;
@@ -30,7 +29,7 @@ import java.util.List;
 
 public class ArraySize implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -41,8 +40,6 @@ public class ArraySize implements IntrinsicMethod {
     ) {
         receiver.put(receiver.type, v);
         v.arraylength();
-
         StackValue.coerce(Type.INT_TYPE, returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

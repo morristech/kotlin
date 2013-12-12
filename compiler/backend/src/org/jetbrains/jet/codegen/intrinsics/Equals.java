@@ -25,16 +25,16 @@ import org.jetbrains.jet.codegen.StackValue;
 import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.lang.psi.JetCallExpression;
 import org.jetbrains.jet.lang.psi.JetExpression;
-import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
 import org.jetbrains.jet.lexer.JetTokens;
 
 import java.util.List;
 
 import static org.jetbrains.jet.codegen.AsmUtil.genEqualsForExpressionsOnStack;
+import static org.jetbrains.jet.lang.resolve.java.AsmTypeConstants.OBJECT_TYPE;
 
 public class Equals implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -54,11 +54,9 @@ public class Equals implements IntrinsicMethod {
             rightExpr = arguments.get(1);
         }
 
-        leftExpr.put(AsmTypeConstants.OBJECT_TYPE, v);
-        codegen.gen(rightExpr).put(AsmTypeConstants.OBJECT_TYPE, v);
+        leftExpr.put(OBJECT_TYPE, v);
+        codegen.gen(rightExpr).put(OBJECT_TYPE, v);
 
-        StackValue value = genEqualsForExpressionsOnStack(v, JetTokens.EQEQ, AsmTypeConstants.OBJECT_TYPE, AsmTypeConstants.OBJECT_TYPE);
-        value.put(returnType, v);
-        return StackValue.onStack(returnType);
+        genEqualsForExpressionsOnStack(v, JetTokens.EQEQ, OBJECT_TYPE, OBJECT_TYPE).put(returnType, v);
     }
 }

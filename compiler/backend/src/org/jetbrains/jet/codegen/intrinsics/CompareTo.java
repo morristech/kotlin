@@ -32,7 +32,7 @@ import static org.jetbrains.jet.codegen.AsmUtil.comparisonOperandType;
 
 public class CompareTo implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -78,6 +78,5 @@ public class CompareTo implements IntrinsicMethod {
         }
 
         StackValue.coerce(Type.INT_TYPE, returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

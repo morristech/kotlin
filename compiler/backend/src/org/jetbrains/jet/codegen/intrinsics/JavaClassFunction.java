@@ -39,7 +39,7 @@ import static org.jetbrains.jet.lang.resolve.java.AsmTypeConstants.getType;
 
 public class JavaClassFunction implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen, InstructionAdapter v, @NotNull Type expectedType, @Nullable PsiElement element,
             @Nullable List<JetExpression> arguments, StackValue receiver, @NotNull GenerationState state
     ) {
@@ -47,8 +47,7 @@ public class JavaClassFunction implements IntrinsicMethod {
         ResolvedCall<? extends CallableDescriptor> resolvedCall =
                 codegen.getBindingContext().get(BindingContext.RESOLVED_CALL, call.getCalleeExpression());
         assert resolvedCall != null;
-        CallableDescriptor resultingDescriptor = resolvedCall.getResultingDescriptor();
-        JetType returnType = resultingDescriptor.getReturnType();
+        JetType returnType = resolvedCall.getResultingDescriptor().getReturnType();
         assert returnType != null;
         Type type = state.getTypeMapper().mapType(returnType.getArguments().get(0).getType());
         if (isPrimitive(type)) {
@@ -59,6 +58,5 @@ public class JavaClassFunction implements IntrinsicMethod {
         }
 
         StackValue.coerce(getType(Class.class), expectedType, v);
-        return StackValue.onStack(expectedType);
     }
 }

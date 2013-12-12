@@ -28,9 +28,7 @@ import org.jetbrains.jet.lang.psi.JetExpression;
 import java.util.List;
 
 import static org.jetbrains.asm4.Opcodes.*;
-import static org.jetbrains.jet.codegen.AsmUtil.boxType;
 import static org.jetbrains.jet.codegen.AsmUtil.numberFunctionOperandType;
-import static org.jetbrains.jet.codegen.AsmUtil.unboxType;
 
 public class BinaryOp implements IntrinsicMethod {
     private final int opcode;
@@ -40,7 +38,7 @@ public class BinaryOp implements IntrinsicMethod {
     }
 
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -49,7 +47,6 @@ public class BinaryOp implements IntrinsicMethod {
             StackValue receiver,
             @NotNull GenerationState state
     ) {
-
         boolean nullable = returnType.getSort() == Type.OBJECT;
         assert !nullable : "Return type of BinaryOp intrinsic should be of primitive type : " + returnType;
 
@@ -67,8 +64,6 @@ public class BinaryOp implements IntrinsicMethod {
             codegen.gen(arguments.get(1), shift() ? Type.INT_TYPE : operandType);
         }
         v.visitInsn(returnType.getOpcode(opcode));
-
-        return StackValue.onStack(returnType);
     }
 
     private boolean shift() {

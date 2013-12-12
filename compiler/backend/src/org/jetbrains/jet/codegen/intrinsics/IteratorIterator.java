@@ -30,7 +30,7 @@ import java.util.List;
 
 public class IteratorIterator implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -40,6 +40,5 @@ public class IteratorIterator implements IntrinsicMethod {
             @NotNull GenerationState state
     ) {
         receiver.put(returnType, v);
-        return StackValue.onStack(returnType);
     }
 }

@@ -38,7 +38,7 @@ import java.util.Map;
 
 public class JavaClassArray implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -52,6 +52,5 @@ public class JavaClassArray implements IntrinsicMethod {
         assert call != null;
         Map.Entry<ValueParameterDescriptor, ResolvedValueArgument> next = call.getValueArguments().entrySet().iterator().next();
         codegen.genVarargs(next.getKey(), (VarargValueArgument) next.getValue());
-        return StackValue.onStack(returnType);
     }
 }

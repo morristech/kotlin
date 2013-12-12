@@ -31,7 +31,7 @@ import static org.jetbrains.jet.codegen.AsmUtil.correctElementType;
 
 public class ArraySet implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -49,7 +49,5 @@ public class ArraySet implements IntrinsicMethod {
         v.astore(type);
 
         StackValue.coerce(Type.VOID_TYPE, returnType, v);
-
-        return StackValue.onStack(returnType);
     }
 }

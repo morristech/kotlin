@@ -32,7 +32,7 @@ import java.util.List;
 
 public class HashCode implements IntrinsicMethod {
     @Override
-    public StackValue generate(
+    public void generate(
             ExpressionCodegen codegen,
             InstructionAdapter v,
             @NotNull Type returnType,
@@ -44,6 +44,5 @@ public class HashCode implements IntrinsicMethod {
         receiver.put(AsmTypeConstants.OBJECT_TYPE, v);
         v.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "hashCode", "()I");
         StackValue.coerce(Type.INT_TYPE, returnType, v);
-        return StackValue.onStack(returnType);
     }
 }
