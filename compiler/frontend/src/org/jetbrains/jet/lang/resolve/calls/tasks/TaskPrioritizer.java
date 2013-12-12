@@ -122,7 +122,7 @@ public class TaskPrioritizer {
         }
         List<ReceiverValue> implicitReceivers = JetScopeUtils.getImplicitReceiversHierarchyValues(c.scope);
         if (receiver.exists()) {
-            addCandidatesForExplicitReceiver(receiver, implicitReceivers, c, buildKind(/*isInvoke=*/false, /*isExplicit=*/true));
+            addCandidatesForExplicitReceiver(receiver, implicitReceivers, c, buildKind().normalCall().explicitReceiver());
             return;
         }
         addCandidatesForNoReceiver(implicitReceivers, c);
@@ -203,7 +203,7 @@ public class TaskPrioritizer {
 
         //try all implicit receivers as explicit
         for (ReceiverValue implicitReceiver : implicitReceivers) {
-            addCandidatesForExplicitReceiver(implicitReceiver, implicitReceivers, c, buildKind(/*isInvoke=*/false, /*isExplicit=*/false));
+            addCandidatesForExplicitReceiver(implicitReceiver, implicitReceivers, c, buildKind().normalCall().implicitReceiver());
         }
         
         //nonlocals
@@ -228,7 +228,7 @@ public class TaskPrioritizer {
         // (1) a.foo + foo.invoke()
         if (!explicitReceiver.exists()) {
             addCandidatesForExplicitReceiver(variableReceiver, implicitReceivers, c,
-                buildKind(/*isInvoke=*/true, /*isExplicit=*/false));
+                                             buildKind().invokeCall().oneExplicitReceiver());
         }
 
         // (2) foo + a.invoke()
@@ -240,14 +240,14 @@ public class TaskPrioritizer {
         if (explicitReceiver.exists()) {
             //a.foo()
             addCandidatesWhenInvokeIsMemberAndExtensionToExplicitReceiver(
-                    variableReceiver, explicitReceiver, c, buildKind(/*isInvoke=*/true, /*isExplicit=*/true),
+                    variableReceiver, explicitReceiver, c, buildKind().invokeCall().twoExplicitReceivers(),
                     /*isThisObjectExplicit=*/false);
             return;
         }
         // with (a) { foo() }
         for (ReceiverValue implicitReceiver : implicitReceivers) {
             addCandidatesWhenInvokeIsMemberAndExtensionToExplicitReceiver(
-                    variableReceiver, implicitReceiver, c, buildKind(/*isInvoke=*/true, /*isExplicit=*/false),
+                    variableReceiver, implicitReceiver, c, buildKind().invokeCall().oneExplicitReceiver(),
                     /*isThisObjectExplicit=*/true);
         }
     }
@@ -307,7 +307,7 @@ public class TaskPrioritizer {
             @NotNull Collection<? extends D> descriptors
     ) {
         return convertWithImpliedThis(scope, Collections.singletonList(NO_RECEIVER), descriptors,
-                                      buildKind(/*isInvoke=*/false, /*isExplicit=*/false));
+                                      buildKind().normalCall().implicitReceiver());
     }
 
     public static <D extends CallableDescriptor> Collection<ResolutionCandidate<D>> convertWithImpliedThis(

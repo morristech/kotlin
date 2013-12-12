@@ -25,22 +25,42 @@ public trait ReceiverKindBuilder {
     public fun asReceiverArgument(): ReceiverKind
 }
 
-private enum class ReceiverKindBuilderImpl private(val isInvoke: Boolean, val isExplicit: Boolean) : ReceiverKindBuilder {
+private enum class ReceiverKindBuilderImpl private(
+        val isInvoke: Boolean,
+        val isExplicitOrHasSecondExplicit: Boolean
+) : ReceiverKindBuilder {
+
     INVOKE_EXPLICIT : ReceiverKindBuilderImpl(true, true)
     INVOKE_IMPLICIT : ReceiverKindBuilderImpl(true, false)
     NOT_INVOKE_EXPLICIT : ReceiverKindBuilderImpl(false, true)
     NOT_INVOKE_IMPLICIT : ReceiverKindBuilderImpl(false, false)
 
     private fun getKind(kind: ReceiverKind): ReceiverKind {
-        if (!isInvoke && !isExplicit) return NO_EXPLICIT_RECEIVER
-        if (isInvoke && isExplicit) return BOTH_RECEIVERS
+        if (!isInvoke && !isExplicitOrHasSecondExplicit) return NO_EXPLICIT_RECEIVER
+        if (isInvoke && isExplicitOrHasSecondExplicit) return BOTH_RECEIVERS
         return kind
     }
     override fun asThisObject() = getKind(THIS_OBJECT)
     override fun asReceiverArgument() = getKind(RECEIVER_ARGUMENT)
 }
 
-public fun buildKind(isInvoke: Boolean, isExplicit: Boolean): ReceiverKindBuilder =
+fun buildKind() = BuildKind;
+object BuildKind {
+
+    fun normalCall() = NormalCall;
+    object NormalCall {
+        fun explicitReceiver() = buildKind(false, true)
+        fun implicitReceiver() = buildKind(false, false)
+    }
+
+    fun invokeCall() = InvokeCall;
+    object InvokeCall {
+        fun twoExplicitReceivers() = buildKind(true, true)
+        fun oneExplicitReceiver() = buildKind(true, false)
+    }
+}
+
+private fun buildKind(isInvoke: Boolean, isExplicit: Boolean): ReceiverKindBuilder =
         when (Pair(isInvoke, isExplicit)) {
             Pair(true, true) -> INVOKE_EXPLICIT
             Pair(true, false) -> INVOKE_IMPLICIT
