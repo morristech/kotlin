@@ -44,9 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jetbrains.jet.lang.resolve.DescriptorUtils.isClassObject;
 import static org.jetbrains.jet.lang.resolve.calls.CallResolverUtil.isOrOverridesSynthesized;
-import static org.jetbrains.jet.lang.resolve.calls.tasks.ReceiverKind.*;
 import static org.jetbrains.jet.lang.resolve.calls.tasks.receiverKind.ReceiverKindPackage.buildKind;
 import static org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue.NO_RECEIVER;
 
@@ -241,20 +239,20 @@ public class TaskPrioritizer {
 
         if (explicitReceiver.exists()) {
             //a.foo()
-            addCandidatesWhenInvokeIsMemberExtensionToExplicitReceiver(
+            addCandidatesWhenInvokeIsMemberAndExtensionToExplicitReceiver(
                     variableReceiver, explicitReceiver, c, buildKind(/*isInvoke=*/true, /*isExplicit=*/true),
                     /*isThisObjectExplicit=*/false);
             return;
         }
         // with (a) { foo() }
         for (ReceiverValue implicitReceiver : implicitReceivers) {
-            addCandidatesWhenInvokeIsMemberExtensionToExplicitReceiver(
+            addCandidatesWhenInvokeIsMemberAndExtensionToExplicitReceiver(
                     variableReceiver, implicitReceiver, c, buildKind(/*isInvoke=*/true, /*isExplicit=*/false),
                     /*isThisObjectExplicit=*/true);
         }
     }
 
-    private static <D extends CallableDescriptor, F extends D> void addCandidatesWhenInvokeIsMemberExtensionToExplicitReceiver(
+    private static <D extends CallableDescriptor, F extends D> void addCandidatesWhenInvokeIsMemberAndExtensionToExplicitReceiver(
             @NotNull ReceiverValue thisObject,
             @NotNull ReceiverValue receiverParameter,
             @NotNull TaskPrioritizerContext<D, F> c,
